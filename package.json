@@ -1,0 +1,13 @@
+{
+  "name": "flight-lab-simulator",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone browser flight simulator prototype with regression checks.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/regression.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

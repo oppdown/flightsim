@@ -1,0 +1,579 @@
+<div id="flight-simulator" aria-label="Initial flight simulator">
+  <style>
+    #flight-simulator {
+      --fs-ink: #edf5f3;
+      --fs-muted: #9cb0ae;
+      --fs-line: rgba(191, 222, 214, .18);
+      --fs-panel: rgba(17, 29, 34, .92);
+      --fs-panel-2: rgba(21, 39, 43, .96);
+      --fs-teal: #57d4bd;
+      --fs-amber: #f2c36b;
+      --fs-red: #ef8d79;
+      display: block;
+      color: var(--fs-ink);
+      font: 400 14px/1.4 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #flight-simulator * { box-sizing: border-box; }
+
+    #flight-simulator .fs-shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+      border: 1px solid var(--fs-line);
+      border-radius: 18px;
+      background: radial-gradient(circle at 76% 0%, rgba(45, 119, 113, .24), transparent 34%), #0b171c;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, .28);
+    }
+
+    #flight-simulator .fs-head,
+    #flight-simulator .fs-actions,
+    #flight-simulator .fs-status-row,
+    #flight-simulator .fs-panel-heading,
+    #flight-simulator .fs-readout,
+    #flight-simulator .fs-control-row {
+      display: flex;
+      align-items: center;
+    }
+
+    #flight-simulator .fs-head {
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    #flight-simulator .fs-eyebrow {
+      color: var(--fs-teal);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    #flight-simulator h2,
+    #flight-simulator h3,
+    #flight-simulator p { margin: 0; }
+
+    #flight-simulator h2 { font-size: 22px; font-weight: 500; letter-spacing: -.02em; }
+    #flight-simulator h3 { font-size: 13px; font-weight: 500; }
+    #flight-simulator .fs-subtitle { color: var(--fs-muted); margin-top: 3px; }
+
+    #flight-simulator .fs-actions { gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    #flight-simulator button {
+      border: 1px solid var(--fs-line);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--fs-ink);
+      background: rgba(255, 255, 255, .055);
+      cursor: pointer;
+      font: inherit;
+    }
+    #flight-simulator button:hover { background: rgba(255, 255, 255, .10); }
+    #flight-simulator button:focus-visible { outline: 2px solid var(--fs-teal); outline-offset: 2px; }
+    #flight-simulator .fs-primary { border-color: rgba(87, 212, 189, .5); background: rgba(48, 142, 130, .34); }
+
+    #flight-simulator .fs-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(250px, .72fr); gap: 12px; }
+    #flight-simulator .fs-cockpit,
+    #flight-simulator .fs-panel { border: 1px solid var(--fs-line); background: var(--fs-panel); }
+    #flight-simulator .fs-cockpit { min-width: 0; overflow: hidden; border-radius: 13px; }
+    #flight-simulator .fs-canvas-wrap { position: relative; background: #10272d; aspect-ratio: 16 / 10; min-height: 310px; }
+    #flight-simulator canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+    #flight-simulator .fs-reticle {
+      position: absolute;
+      left: 50%; top: 50%; width: 18px; height: 18px;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 255, 255, .65);
+      border-radius: 50%; pointer-events: none; opacity: .62;
+    }
+    #flight-simulator .fs-reticle::before,
+    #flight-simulator .fs-reticle::after { content: ""; position: absolute; background: rgba(255,255,255,.55); }
+    #flight-simulator .fs-reticle::before { width: 32px; height: 1px; left: -8px; top: 8px; }
+    #flight-simulator .fs-reticle::after { height: 32px; width: 1px; left: 8px; top: -8px; }
+    #flight-simulator .fs-canvas-label { position: absolute; left: 12px; top: 10px; color: rgba(255,255,255,.74); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
+    #flight-simulator .fs-readouts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--fs-line); }
+    #flight-simulator .fs-readout { justify-content: space-between; gap: 5px; min-width: 0; padding: 9px 10px; background: rgba(9, 20, 24, .96); }
+    #flight-simulator .fs-readout-label { color: var(--fs-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    #flight-simulator .fs-readout-value { color: var(--fs-ink); font-variant-numeric: tabular-nums; font-weight: 500; }
+    #flight-simulator .fs-side { display: grid; align-content: start; gap: 12px; }
+    #flight-simulator .fs-panel { padding: 13px; border-radius: 11px; }
+    #flight-simulator .fs-panel-heading { justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    #flight-simulator .fs-panel-heading span { color: var(--fs-muted); font-size: 11px; }
+    #flight-simulator .fs-control-row { justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(191, 222, 214, .10); }
+    #flight-simulator .fs-control-row:first-of-type { border-top: 0; }
+    #flight-simulator kbd { min-width: 32px; padding: 2px 5px; border: 1px solid var(--fs-line); border-radius: 5px; color: var(--fs-amber); background: rgba(255,255,255,.05); font-size: 11px; text-align: center; }
+    #flight-simulator .fs-binding { color: var(--fs-muted); font-size: 12px; text-align: right; }
+    #flight-simulator .fs-gamepad { color: var(--fs-teal); font-size: 12px; }
+    #flight-simulator .fs-gamepad.disconnected { color: var(--fs-muted); }
+    #flight-simulator .fs-meter { height: 5px; margin-top: 8px; overflow: hidden; border-radius: 10px; background: rgba(255,255,255,.10); }
+    #flight-simulator .fs-meter-fill { width: 58%; height: 100%; border-radius: inherit; background: var(--fs-teal); transition: width .12s linear; }
+    #flight-simulator .fs-objective { color: var(--fs-muted); font-size: 12px; }
+    #flight-simulator .fs-objective strong { color: var(--fs-ink); font-weight: 500; }
+    #flight-simulator .fs-status-row { justify-content: space-between; gap: 8px; padding-top: 12px; color: var(--fs-muted); font-size: 12px; }
+    #flight-simulator .fs-status { color: var(--fs-amber); }
+    #flight-simulator .fs-footer { margin-top: 11px; color: var(--fs-muted); font-size: 11px; }
+    #flight-simulator .fs-live { color: var(--fs-ink); }
+
+    @media (max-width: 760px) {
+      #flight-simulator .fs-shell { padding: 12px; }
+      #flight-simulator .fs-head { align-items: flex-start; flex-direction: column; }
+      #flight-simulator .fs-actions { justify-content: flex-start; }
+      #flight-simulator .fs-layout { grid-template-columns: 1fr; }
+      #flight-simulator .fs-readouts { grid-template-columns: repeat(3, 1fr); }
+      #flight-simulator .fs-readout { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 420px) {
+      #flight-simulator .fs-readouts { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+
+  <div class="fs-shell">
+    <div class="fs-head">
+      <div>
+        <div class="fs-eyebrow">Flight Lab · Initial Simulator</div>
+        <h2>Takeoff &amp; Landing Trainer</h2>
+        <p class="fs-subtitle">A small, deterministic first slice with shared keyboard, mouse, and Xbox-style controls.</p>
+      </div>
+      <div class="fs-actions">
+        <button id="fs-start" class="fs-primary" type="button">Start flight</button>
+        <button id="fs-pause" type="button">Pause</button>
+        <button id="fs-reset" type="button">Reset</button>
+      </div>
+    </div>
+
+    <div class="fs-layout">
+      <section class="fs-cockpit" aria-label="Flight view">
+        <div class="fs-canvas-wrap">
+          <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, runway, aircraft reticle, and training ring"></canvas>
+          <div class="fs-canvas-label">CHASE VIEW · TRAINING SECTOR 01</div>
+          <div class="fs-reticle" aria-hidden="true"></div>
+        </div>
+        <div class="fs-readouts" aria-live="polite">
+          <div class="fs-readout"><span class="fs-readout-label">Speed</span><span><span id="fs-speed" class="fs-readout-value">0</span> mph</span></div>
+          <div class="fs-readout"><span class="fs-readout-label">Altitude</span><span><span id="fs-altitude" class="fs-readout-value">0</span> ft</span></div>
+          <div class="fs-readout"><span class="fs-readout-label">Heading</span><span><span id="fs-heading" class="fs-readout-value">000</span>°</span></div>
+          <div class="fs-readout"><span class="fs-readout-label">Pitch / Roll</span><span><span id="fs-attitude" class="fs-readout-value">0 / 0</span>°</span></div>
+          <div class="fs-readout"><span class="fs-readout-label">Throttle</span><span><span id="fs-throttle" class="fs-readout-value">58</span>%</span></div>
+        </div>
+      </section>
+
+      <aside class="fs-side" aria-label="Controls and flight status">
+        <section class="fs-panel">
+          <div class="fs-panel-heading"><h3>Flight status</h3><span id="fs-mode">READY</span></div>
+          <div class="fs-objective"><strong id="fs-objective-title">Objective 1 · Take off</strong><br><span id="fs-objective-detail">Build speed above 55 mph, then raise the nose.</span></div>
+          <div class="fs-meter" aria-label="Throttle"><div id="fs-throttle-meter" class="fs-meter-fill"></div></div>
+          <div class="fs-status-row"><span id="fs-score">Score 0</span><span id="fs-message" class="fs-status" aria-live="polite">Press Start flight</span></div>
+        </section>
+
+        <section class="fs-panel">
+          <div class="fs-panel-heading"><h3>Mouse + keyboard</h3><span>Shared actions</span></div>
+          <div class="fs-control-row"><span>Pitch / roll</span><span class="fs-binding">Mouse position · arrows / A D</span></div>
+          <div class="fs-control-row"><span>Throttle</span><span class="fs-binding"><kbd>W</kbd> <kbd>S</kbd></span></div>
+          <div class="fs-control-row"><span>Yaw</span><span class="fs-binding"><kbd>Q</kbd> <kbd>E</kbd></span></div>
+          <div class="fs-control-row"><span>Brake</span><span class="fs-binding"><kbd>Space</kbd></span></div>
+          <div class="fs-control-row"><span>Pause</span><span class="fs-binding"><kbd>P</kbd></span></div>
+          <div class="fs-control-row"><span>Mouse input</span><span class="fs-binding">Move inside the view</span></div>
+        </section>
+
+        <section class="fs-panel">
+          <div class="fs-panel-heading"><h3>Xbox controller</h3><span id="fs-gamepad-state" class="fs-gamepad disconnected">Not detected</span></div>
+          <div class="fs-control-row"><span>Pitch / roll</span><span class="fs-binding">Left stick</span></div>
+          <div class="fs-control-row"><span>Throttle</span><span class="fs-binding">LT / RT</span></div>
+          <div class="fs-control-row"><span>Yaw</span><span class="fs-binding">LB / RB</span></div>
+          <div class="fs-control-row"><span>Brake</span><span class="fs-binding">X</span></div>
+          <div class="fs-control-row"><span>Pause</span><span class="fs-binding">Menu</span></div>
+          <div class="fs-control-row"><span>Reset</span><span class="fs-binding">B</span></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="fs-footer"><span class="fs-live">Live:</span> Bank with A/D or the left stick and watch the aircraft, horizon, runway, and landmarks move together through the turn.</div>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.getElementById('flight-simulator');
+      const canvas = root.querySelector('#fs-canvas');
+      const ctx = canvas.getContext('2d');
+      const keys = new Set();
+      const pointer = { active: false, x: 0, y: 0 };
+      const view = { width: 0, height: 0, dpr: 1 };
+      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: .58, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0 });
+      let state = initialState();
+      let lastFrame = performance.now();
+      let accumulator = 0;
+      let gamepadActionLatch = { start: false, pause: false, reset: false };
+      const FIXED_DT = 1 / 60;
+
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+      const lerp = (a, b, amount) => a + (b - a) * amount;
+      const rad = degrees => degrees * Math.PI / 180;
+      const el = id => root.querySelector(id);
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        view.width = Math.max(320, rect.width);
+        view.height = Math.max(220, rect.height);
+        view.dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.round(view.width * view.dpr);
+        canvas.height = Math.round(view.height * view.dpr);
+        ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+      }
+
+      function keyboardAxes() {
+        const pitch = (keys.has('ArrowUp') ? 1 : 0) + (keys.has('ArrowDown') ? -1 : 0);
+        const roll = ((keys.has('ArrowRight') || keys.has('KeyD')) ? 1 : 0) + ((keys.has('ArrowLeft') || keys.has('KeyA')) ? -1 : 0);
+        const yaw = (keys.has('KeyE') ? 1 : 0) + (keys.has('KeyQ') ? -1 : 0);
+        const throttle = (keys.has('KeyW') ? .75 : 0) + (keys.has('KeyS') ? -.75 : 0);
+        const brake = keys.has('Space') ? 1 : 0;
+        return { pitch, roll, yaw, throttle, brake };
+      }
+
+      function pointerAxes() {
+        if (!pointer.active) return { pitch: 0, roll: 0 };
+        const rect = canvas.getBoundingClientRect();
+        const x = clamp((pointer.x - rect.left) / rect.width * 2 - 1, -1, 1);
+        const y = clamp((pointer.y - rect.top) / rect.height * 2 - 1, -1, 1);
+        return { pitch: -y, roll: x };
+      }
+
+      function gamepadAxes() {
+        const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+        const pad = Array.from(pads).find(Boolean);
+        if (!pad) return { pitch: 0, roll: 0, yaw: 0, throttle: 0, brake: 0, pad: null };
+        const deadzone = value => Math.abs(value) < .12 ? 0 : value;
+        const leftX = deadzone(pad.axes[0] || 0);
+        const leftY = deadzone(pad.axes[1] || 0);
+        const lt = pad.buttons[6]?.value || 0;
+        const rt = pad.buttons[7]?.value || 0;
+        const yaw = (pad.buttons[5]?.value || 0) - (pad.buttons[4]?.value || 0);
+        return { pitch: -leftY, roll: leftX, yaw, throttle: rt - lt, brake: pad.buttons[2]?.value || 0, pad };
+      }
+
+      function handleGamepadActions() {
+        const { pad } = gamepadAxes();
+        const next = pad ? {
+          start: Boolean(pad.buttons[0]?.pressed),
+          pause: Boolean(pad.buttons[9]?.pressed),
+          reset: Boolean(pad.buttons[1]?.pressed)
+        } : { start: false, pause: false, reset: false };
+        if (next.start && !gamepadActionLatch.start) startFlight();
+        if (next.pause && !gamepadActionLatch.pause) togglePause();
+        if (next.reset && !gamepadActionLatch.reset) resetFlight();
+        gamepadActionLatch = next;
+      }
+
+      function updateGamepadLabel() {
+        const { pad } = gamepadAxes();
+        const label = el('#fs-gamepad-state');
+        if (pad) {
+          label.textContent = 'Connected';
+          label.classList.remove('disconnected');
+          label.setAttribute('aria-label', pad.id || 'Xbox controller connected');
+        } else {
+          label.textContent = 'Not detected';
+          label.classList.add('disconnected');
+        }
+      }
+
+      function resetFlight() {
+        state = initialState();
+        accumulator = 0;
+        el('#fs-mode').textContent = 'READY';
+        el('#fs-message').textContent = state.message;
+        updateUi();
+      }
+
+      function startFlight() {
+        if (!state.running) state.running = true;
+        state.paused = false;
+        state.message = 'Accelerate down the runway';
+        el('#fs-mode').textContent = 'LIVE';
+        el('#fs-message').textContent = state.message;
+      }
+
+      function togglePause() {
+        if (!state.running) return;
+        state.paused = !state.paused;
+        state.message = state.paused ? 'Paused' : 'Resume flight';
+        el('#fs-mode').textContent = state.paused ? 'PAUSED' : 'LIVE';
+        el('#fs-message').textContent = state.message;
+      }
+
+      function physicsStep(dt) {
+        const keyboard = keyboardAxes();
+        const mouse = pointerAxes();
+        const pad = gamepadAxes();
+        const pitchInput = clamp(keyboard.pitch * .55 + mouse.pitch * .8 + pad.pitch, -1, 1);
+        const rollInput = clamp(keyboard.roll * .7 + mouse.roll * .8 + pad.roll, -1, 1);
+        const yawInput = clamp(keyboard.yaw * .7 + pad.yaw, -1, 1);
+        const throttleInput = clamp(keyboard.throttle + pad.throttle, -1, 1);
+        const brakeInput = clamp(keyboard.brake + pad.brake, 0, 1);
+
+        state.throttle = clamp(state.throttle + throttleInput * dt * .45, 0, 1);
+        state.pitch = lerp(state.pitch, pitchInput * 14, dt * 4.2);
+        state.roll = lerp(state.roll, rollInput * 32, dt * 4.8);
+        const coordinatedTurnRate = Math.sin(rad(state.roll)) * (4 + state.speed * .23);
+        state.heading = (state.heading + (yawInput * 22 + coordinatedTurnRate) * dt + 360) % 360;
+
+        const drag = 3.2 + state.speed * .075 + Math.abs(state.pitch) * .08 + brakeInput * 18;
+        const acceleration = state.throttle * 27 - drag;
+        state.speed = clamp(state.speed + acceleration * dt, 0, 210);
+        const airborne = state.altitude > 0 || state.speed > 60;
+        const lift = Math.max(0, state.speed - 54) * (state.pitch > 1 ? .54 : .16);
+        const stallSink = Math.max(0, 52 - state.speed) * .28;
+        const lowSpeedGravity = state.speed < 18 ? 9 : 0;
+        const climbRate = airborne ? Math.sin(rad(state.pitch)) * state.speed * .55 + lift - stallSink - lowSpeedGravity : 0;
+        state.verticalSpeed = climbRate;
+        state.altitude += climbRate * dt;
+        const travel = state.speed * dt * .15;
+        state.distance += travel;
+        state.worldX += Math.sin(rad(state.heading)) * travel;
+        state.worldZ += Math.cos(rad(state.heading)) * travel;
+        state.fuel = clamp(state.fuel - state.throttle * dt * .035, 0, 100);
+        if (state.fuel === 0) state.throttle = 0;
+
+        if (state.altitude < 0) {
+          state.altitude = 0;
+          if (state.speed < 42 && Math.abs(state.pitch) < 7) {
+            state.score = Math.max(0, state.score + (state.speed < 12 ? .04 : -.08));
+          } else if (state.speed > 80 || Math.abs(state.roll) > 16) {
+            state.message = 'Hard contact — reset and try again';
+            state.score = Math.max(0, state.score - .4);
+          }
+        }
+
+        if (state.objective === 1 && state.speed >= 55 && state.altitude >= 40) {
+          state.objective = 2;
+          state.message = 'Good lift — climb through the training ring';
+          state.score += 15;
+        }
+        if (state.objective === 2 && state.altitude >= 300) {
+          state.objective = 3;
+          state.message = 'Turn back toward the runway and descend smoothly';
+          state.score += 20;
+        }
+        if (state.objective === 3 && state.altitude < 18 && state.speed > 8 && state.speed < 68 && Math.abs(state.roll) < 8) {
+          state.objective = 4;
+          state.message = 'Stable approach — flare and touch down';
+          state.score += 20;
+        }
+    if (state.objective === 4 && state.altitude === 0 && state.speed >= 18 && state.speed < 75 && Math.abs(state.pitch) < 12 && Math.abs(state.roll) < 12) {
+          state.objective = 5;
+          state.message = 'Training complete — smooth landing';
+          state.score += 45;
+        }
+        if (state.altitude > 900) state.message = 'Keep the training flight below 900 ft';
+      }
+
+      function updateUi() {
+        el('#fs-speed').textContent = Math.round(state.speed);
+        el('#fs-altitude').textContent = Math.round(state.altitude);
+        el('#fs-heading').textContent = String(Math.round(state.heading)).padStart(3, '0');
+        el('#fs-attitude').textContent = `${Math.round(state.pitch)} / ${Math.round(state.roll)}`;
+        el('#fs-throttle').textContent = Math.round(state.throttle * 100);
+        el('#fs-throttle-meter').style.width = `${state.throttle * 100}%`;
+        el('#fs-score').textContent = `Score ${Math.max(0, Math.round(state.score))}`;
+        const objectives = {
+          1: ['Objective 1 · Take off', 'Build speed above 55 mph, then raise the nose.'],
+          2: ['Objective 2 · Climb', 'Reach 300 ft and keep the aircraft level.'],
+          3: ['Objective 3 · Approach', 'Turn back and descend toward the runway.'],
+          4: ['Objective 4 · Land', 'Touch down below 68 mph with small roll.'],
+          5: ['Training complete', 'Reset to fly the course again.']
+        }[state.objective];
+        el('#fs-objective-title').textContent = objectives[0];
+        el('#fs-objective-detail').textContent = objectives[1];
+        const phaseMessages = {
+          1: 'Accelerate down the runway',
+          2: 'Climb through the training ring',
+          3: state.speed < 40 && state.altitude > 20 ? 'Stall warning — add power and lower the nose' : (state.altitude > 650 ? 'Turn back and descend toward the runway' : 'Align with runway 09 and reduce power'),
+          4: 'Flare and touch down gently',
+          5: 'Training complete'
+        };
+        if (state.objective !== 5 && !state.message.includes('Hard contact')) state.message = phaseMessages[state.objective];
+        el('#fs-message').textContent = state.message;
+      }
+
+      function projectWorldPoint(wx, wz, w, horizon) {
+        const dx = wx - state.worldX;
+        const dz = wz - state.worldZ;
+        const heading = rad(state.heading);
+        const side = dx * Math.cos(heading) - dz * Math.sin(heading);
+        const forward = dx * Math.sin(heading) + dz * Math.cos(heading);
+        if (forward <= 8) return null;
+        const focalLength = Math.max(180, w * .52);
+        const perspective = focalLength / (forward + 180);
+        return {
+          x: w / 2 + side * perspective,
+          y: horizon + 260 * perspective - state.altitude * .045,
+          forward
+        };
+      }
+
+      function drawWorldRunway(w, h, horizon) {
+        const runwayHalfWidth = 45;
+        const startZ = state.worldZ - 220;
+        const endZ = state.worldZ + 2600;
+        const segments = 42;
+        const left = [];
+        const right = [];
+        for (let index = 0; index <= segments; index += 1) {
+          const z = startZ + (endZ - startZ) * index / segments;
+          left.push(projectWorldPoint(-runwayHalfWidth, z, w, horizon));
+          right.push(projectWorldPoint(runwayHalfWidth, z, w, horizon));
+        }
+
+        ctx.fillStyle = 'rgba(31, 45, 48, .92)';
+        ctx.beginPath();
+        let started = false;
+        left.forEach((point, index) => {
+          if (!point) return;
+          if (!started) { ctx.moveTo(point.x, point.y); started = true; }
+          else ctx.lineTo(point.x, point.y);
+        });
+        for (let index = right.length - 1; index >= 0; index -= 1) {
+          const point = right[index];
+          if (point) ctx.lineTo(point.x, point.y);
+        }
+        if (started) { ctx.closePath(); ctx.fill(); }
+
+        ctx.strokeStyle = 'rgba(238, 242, 224, .78)'; ctx.lineWidth = 1.5;
+        [left, right].forEach(points => {
+          ctx.beginPath();
+          points.forEach((point, index) => {
+            if (!point) return;
+            if (index === 0 || !points[index - 1]) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          });
+          ctx.stroke();
+        });
+
+        ctx.strokeStyle = 'rgba(242, 195, 107, .92)'; ctx.lineWidth = 2; ctx.setLineDash([12, 14]);
+        ctx.beginPath();
+        for (let index = 1; index < segments; index += 2) {
+          const first = projectWorldPoint(0, startZ + (endZ - startZ) * index / segments, w, horizon);
+          const second = projectWorldPoint(0, startZ + (endZ - startZ) * (index + 1) / segments, w, horizon);
+          if (!first || !second) continue;
+          ctx.moveTo(first.x, first.y); ctx.lineTo(second.x, second.y);
+        }
+        ctx.stroke(); ctx.setLineDash([]);
+
+        const labelPoint = projectWorldPoint(0, state.worldZ + 720, w, horizon);
+        if (labelPoint && labelPoint.y > 12 && labelPoint.y < h - 44) {
+          ctx.fillStyle = 'rgba(244, 246, 225, .82)'; ctx.font = '10px system-ui'; ctx.fillText('09', labelPoint.x + 7, labelPoint.y - 5);
+        }
+      }
+
+      function drawWorldBeacon(w, horizon) {
+        const point = projectWorldPoint(0, state.worldZ + 1050, w, horizon);
+        if (!point || point.y < 8 || point.y > view.height - 40) return;
+        ctx.strokeStyle = 'rgba(224, 244, 233, .82)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(point.x, point.y + 18); ctx.lineTo(point.x, point.y - 5); ctx.stroke();
+        ctx.fillStyle = 'rgba(224, 244, 233, .92)'; ctx.beginPath(); ctx.arc(point.x, point.y - 8, 4, 0, Math.PI * 2); ctx.fill();
+      }
+
+      function drawTrainingRing(w, horizon) {
+        const point = projectWorldPoint(140, state.worldZ + 900, w, horizon);
+        if (!point || point.y < 8 || point.y > view.height - 44) return;
+        const ringSize = clamp(54 - state.altitude * .012, 20, 54);
+        ctx.strokeStyle = state.objective === 2 ? 'rgba(242, 195, 107, .95)' : 'rgba(242, 195, 107, .28)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(point.x, point.y, ringSize, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      function drawAircraft(w, h) {
+        ctx.save();
+        ctx.translate(w / 2, h * .73);
+        ctx.rotate(rad(state.roll) * .62);
+        const scale = clamp(w / 640, .72, 1.18);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = 'rgba(5, 14, 18, .28)';
+        ctx.beginPath(); ctx.ellipse(0, 22, 82, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#d9eee7'; ctx.fillStyle = '#243d42'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -58); ctx.lineTo(8, -12); ctx.lineTo(78, 12); ctx.lineTo(78, 22); ctx.lineTo(7, 17);
+        ctx.lineTo(20, 52); ctx.lineTo(8, 58); ctx.lineTo(0, 25); ctx.lineTo(-8, 58);
+        ctx.lineTo(-20, 52); ctx.lineTo(-7, 17); ctx.lineTo(-78, 22); ctx.lineTo(-78, 12); ctx.lineTo(-8, -12); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#56d4be'; ctx.strokeStyle = '#a8f0dc';
+        ctx.beginPath(); ctx.ellipse(0, -31, 9, 18, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#f2c36b'; ctx.beginPath(); ctx.arc(-58, 18, 5, 0, Math.PI * 2); ctx.arc(58, 18, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
+      function draw() {
+        const w = view.width, h = view.height;
+        const horizon = clamp(h * .48 + state.pitch * 3.3, h * .25, h * .72);
+        ctx.clearRect(0, 0, w, h);
+        const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+        sky.addColorStop(0, '#18515c'); sky.addColorStop(1, '#65b8b5');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, w, horizon);
+        const ground = ctx.createLinearGradient(0, horizon, 0, h);
+        ground.addColorStop(0, '#6e8069'); ground.addColorStop(1, '#182d2d');
+        ctx.fillStyle = ground; ctx.fillRect(0, horizon, w, h - horizon);
+
+        ctx.save();
+        ctx.translate(w / 2, horizon);
+        ctx.rotate(-rad(state.roll) * .38);
+        ctx.translate(-w / 2, -horizon);
+        ctx.strokeStyle = 'rgba(235, 251, 245, .52)'; ctx.lineWidth = 1;
+        for (let angle = -20; angle <= 20; angle += 10) {
+          const y = horizon - angle * 3.3;
+          ctx.beginPath(); ctx.moveTo(w / 2 - (angle ? 28 : 48), y); ctx.lineTo(w / 2 + (angle ? 28 : 48), y); ctx.stroke();
+          if (angle !== 0) { ctx.fillStyle = 'rgba(235, 251, 245, .68)'; ctx.font = '10px system-ui'; ctx.fillText(`${Math.abs(angle)}°`, w / 2 + 56, y + 3); }
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(w / 2, horizon);
+        ctx.rotate(-rad(state.roll) * .38);
+        ctx.translate(-w / 2, -horizon);
+        ctx.strokeStyle = 'rgba(14, 41, 42, .34)'; ctx.lineWidth = 1;
+        for (let i = -7; i <= 7; i++) {
+          ctx.beginPath(); ctx.moveTo(w / 2, horizon + 4); ctx.lineTo(w / 2 + i * w * .18, h); ctx.stroke();
+        }
+        for (let i = 1; i < 8; i++) {
+          const y = horizon + Math.pow(i / 8, .62) * (h - horizon);
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        }
+        ctx.restore();
+
+        drawWorldRunway(w, h, horizon);
+        drawWorldBeacon(w, horizon);
+        drawTrainingRing(w, horizon);
+
+        drawAircraft(w, h);
+
+        ctx.fillStyle = 'rgba(5, 18, 21, .58)'; ctx.fillRect(12, h - 30, w - 24, 18);
+        ctx.fillStyle = '#e8f6ef'; ctx.font = '11px system-ui'; ctx.fillText(`WIND 08 kt · RUNWAY 09 · FUEL ${Math.round(state.fuel)}%`, 22, h - 18);
+      }
+
+      function frame(now) {
+        const elapsed = Math.min(.1, (now - lastFrame) / 1000); lastFrame = now; accumulator += elapsed;
+        updateGamepadLabel();
+        handleGamepadActions();
+        if (state.running && !state.paused) {
+          while (accumulator >= FIXED_DT) { physicsStep(FIXED_DT); accumulator -= FIXED_DT; }
+          updateUi();
+        }
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      root.querySelector('#fs-start').addEventListener('click', startFlight);
+      root.querySelector('#fs-pause').addEventListener('click', togglePause);
+      root.querySelector('#fs-reset').addEventListener('click', resetFlight);
+      window.addEventListener('resize', resize);
+      window.addEventListener('gamepadconnected', updateGamepadLabel);
+      window.addEventListener('gamepaddisconnected', updateGamepadLabel);
+      window.addEventListener('keydown', event => {
+        keys.add(event.code);
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
+        if (event.code === 'KeyP' && !event.repeat) togglePause();
+        if (event.code === 'Enter') startFlight();
+      });
+      window.addEventListener('keyup', event => keys.delete(event.code));
+      canvas.addEventListener('pointermove', event => { pointer.active = true; pointer.x = event.clientX; pointer.y = event.clientY; });
+      canvas.addEventListener('pointerleave', () => { pointer.active = false; });
+      canvas.addEventListener('pointerdown', event => { pointer.active = true; canvas.setPointerCapture?.(event.pointerId); startFlight(); });
+      resize(); resetFlight(); requestAnimationFrame(frame);
+    })();
+  </script>
+</div>
