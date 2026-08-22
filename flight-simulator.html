@@ -131,12 +131,13 @@
       <div>
         <div class="fs-eyebrow">Flight Lab · Initial Simulator</div>
         <h2>Takeoff &amp; Landing Trainer</h2>
-        <p class="fs-subtitle">A small, deterministic first slice with shared keyboard, mouse, and Xbox-style controls.</p>
+        <p class="fs-subtitle">A deterministic low-altitude open world with FPV and chase views, shared keyboard, mouse, and Xbox-style controls.</p>
       </div>
       <div class="fs-actions">
         <button id="fs-start" class="fs-primary" type="button">Start flight</button>
         <button id="fs-pause" type="button">Pause</button>
         <button id="fs-reset" type="button">Reset</button>
+        <button id="fs-view-toggle" type="button">View: FPV</button>
       </div>
     </div>
 
@@ -144,7 +145,7 @@
       <section class="fs-cockpit" aria-label="Flight view">
         <div class="fs-canvas-wrap">
           <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, world terrain, trees, cardinal runway markings, aircraft reticle, and training ring"></canvas>
-          <div class="fs-canvas-label">CHASE VIEW · TRAINING SECTOR 01</div>
+          <div id="fs-canvas-label" class="fs-canvas-label">FPV VIEW · OPEN WORLD SECTOR 01</div>
           <div class="fs-reticle" aria-hidden="true"></div>
         </div>
         <div class="fs-readouts" aria-live="polite">
@@ -171,6 +172,7 @@
           <div class="fs-control-row"><span>Yaw</span><span class="fs-binding"><kbd>Q</kbd> <kbd>E</kbd></span></div>
           <div class="fs-control-row"><span>Brake</span><span class="fs-binding"><kbd>Space</kbd></span></div>
           <div class="fs-control-row"><span>Pause</span><span class="fs-binding"><kbd>P</kbd></span></div>
+          <div class="fs-control-row"><span>View</span><span class="fs-binding"><kbd>V</kbd> FPV / chase</span></div>
           <div class="fs-control-row"><span>Mouse input</span><span class="fs-binding">Move inside the view</span></div>
         </section>
 
@@ -186,7 +188,7 @@
       </aside>
     </div>
 
-    <div class="fs-footer"><span class="fs-live">Live:</span> Bank with A/D or the left stick and watch the aircraft, horizon, runway, and landmarks move together through the turn.</div>
+    <div class="fs-footer"><span class="fs-live">Live:</span> Explore the open world in FPV or switch to chase view with V. The runway is one fixed landmark among the terrain, trees, and distant beacons.</div>
   </div>
 
   <script>
@@ -197,7 +199,7 @@
       const keys = new Set();
       const pointer = { active: false, x: 0, y: 0 };
       const view = { width: 0, height: 0, dpr: 1 };
-      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: .58, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0 });
+      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: .58, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
@@ -303,7 +305,16 @@
         accumulator = 0;
         el('#fs-mode').textContent = 'READY';
         el('#fs-message').textContent = state.message;
+        el('#fs-view-toggle').textContent = 'View: FPV';
+        el('#fs-canvas-label').textContent = 'FPV VIEW · OPEN WORLD SECTOR 01';
         updateUi();
+      }
+
+      function toggleView() {
+        state.viewMode = state.viewMode === 'fpv' ? 'chase' : 'fpv';
+        const isFpv = state.viewMode === 'fpv';
+        el('#fs-view-toggle').textContent = `View: ${isFpv ? 'FPV' : 'Chase'}`;
+        el('#fs-canvas-label').textContent = `${isFpv ? 'FPV VIEW' : 'CHASE VIEW'} · OPEN WORLD SECTOR 01`;
       }
 
       function startFlight() {
@@ -547,8 +558,32 @@
         ctx.fill();
       }
 
+      function worldNoise(cellX, cellZ, salt) {
+        const value = Math.sin(cellX * 127.1 + cellZ * 311.7 + salt * 74.3) * 43758.5453;
+        return value - Math.floor(value);
+      }
+
+      function getWorldTrees() {
+        const centerCellX = Math.floor(state.worldX / TERRAIN_CELL_SIZE);
+        const centerCellZ = Math.floor(state.worldZ / TERRAIN_CELL_SIZE);
+        const trees = [...TERRAIN_TREES];
+        for (let cellX = centerCellX - 7; cellX <= centerCellX + 7; cellX += 1) {
+          for (let cellZ = centerCellZ - 7; cellZ <= centerCellZ + 9; cellZ += 1) {
+            if (worldNoise(cellX, cellZ, 2) < .24) continue;
+            const count = worldNoise(cellX, cellZ, 5) > .72 ? 2 : 1;
+            for (let index = 0; index < count; index += 1) {
+              const x = (cellX + .12 + worldNoise(cellX, cellZ, 10 + index) * .76) * TERRAIN_CELL_SIZE;
+              const z = (cellZ + .12 + worldNoise(cellX, cellZ, 20 + index) * .76) * TERRAIN_CELL_SIZE;
+              const size = .72 + worldNoise(cellX, cellZ, 30 + index) * .78;
+              trees.push({ x, z, size });
+            }
+          }
+        }
+        return trees;
+      }
+
       function drawWorldTrees(w, h, horizon) {
-        const visibleTrees = TERRAIN_TREES
+        const visibleTrees = getWorldTrees()
           .map(tree => ({ tree, point: projectWorldPoint(tree.x, tree.z, w, horizon) }))
           .filter(item => item.point && item.point.y > -80 && item.point.y < h + 26)
           .sort((a, b) => b.point.forward - a.point.forward);
@@ -639,6 +674,68 @@
         ctx.restore();
       }
 
+      function drawFpvDrone(w, h) {
+        ctx.save();
+        const leftGuard = { x: w * .14, y: h * .82, radius: Math.max(24, w * .065) };
+        const rightGuard = { x: w * .86, y: h * .82, radius: Math.max(24, w * .065) };
+        ctx.strokeStyle = 'rgba(225, 240, 234, .72)';
+        ctx.lineWidth = Math.max(2, w * .004);
+        ctx.beginPath();
+        ctx.moveTo(w * .5, h * .86); ctx.lineTo(leftGuard.x, leftGuard.y);
+        ctx.moveTo(w * .5, h * .86); ctx.lineTo(rightGuard.x, rightGuard.y);
+        ctx.stroke();
+        [leftGuard, rightGuard].forEach(guard => {
+          ctx.fillStyle = 'rgba(14, 27, 31, .56)';
+          ctx.beginPath(); ctx.arc(guard.x, guard.y, guard.radius * .68, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(225, 240, 234, .72)';
+          ctx.beginPath(); ctx.arc(guard.x, guard.y, guard.radius, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = 'rgba(225, 240, 234, .34)';
+          ctx.beginPath(); ctx.moveTo(guard.x - guard.radius * .55, guard.y); ctx.lineTo(guard.x + guard.radius * .55, guard.y); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(guard.x, guard.y - guard.radius * .55); ctx.lineTo(guard.x, guard.y + guard.radius * .55); ctx.stroke();
+        });
+        ctx.fillStyle = 'rgba(17, 30, 34, .86)';
+        ctx.beginPath();
+        ctx.moveTo(w * .5, h * .76); ctx.lineTo(w * .57, h); ctx.lineTo(w * .43, h); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(225, 240, 234, .65)';
+        ctx.beginPath(); ctx.moveTo(w * .5, h * .76); ctx.lineTo(w * .57, h); ctx.moveTo(w * .5, h * .76); ctx.lineTo(w * .43, h); ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawFpvHud(w, h) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(238, 247, 242, .88)';
+        ctx.font = '500 11px system-ui';
+        ctx.fillText('ARMED', 18, 27);
+        ctx.fillStyle = 'rgba(239, 141, 121, .96)';
+        ctx.fillText('OPEN WORLD', 18, 44);
+
+        ctx.fillStyle = 'rgba(238, 247, 242, .86)';
+        ctx.textAlign = 'right';
+        ctx.fillText(`BAT ${Math.round(state.fuel)}%`, w - 18, 27);
+        ctx.fillText(`ALT ${Math.round(state.altitude)} ft`, w - 18, 44);
+        ctx.fillText(`SPD ${Math.round(state.speed)} mph`, w - 18, 61);
+
+        ctx.textAlign = 'center';
+        ctx.font = '500 15px system-ui';
+        ctx.fillText(String(Math.round(state.heading)).padStart(3, '0'), w / 2, 25);
+        ctx.strokeStyle = 'rgba(238, 247, 242, .64)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(w * .35, 36); ctx.lineTo(w * .65, 36); ctx.stroke();
+        for (let offset = -6; offset <= 6; offset += 1) {
+          const x = w / 2 + offset * w * .024;
+          const tickHeight = offset % 3 === 0 ? 7 : 4;
+          ctx.beginPath(); ctx.moveTo(x, 36); ctx.lineTo(x, 36 + tickHeight); ctx.stroke();
+        }
+        ctx.font = '10px system-ui';
+        ctx.fillText('N      E      S      W', w / 2, 56);
+
+        ctx.textAlign = 'left';
+        ctx.fillText(`ACRO  ${state.viewMode.toUpperCase()}`, 18, h - 22);
+        ctx.textAlign = 'right';
+        ctx.fillText(`V/S ${Math.round(state.verticalSpeed)} ft/s`, w - 18, h - 22);
+        ctx.restore();
+      }
+
       function draw() {
         const w = view.width, h = view.height;
         const horizon = clamp(h * .48 + state.pitch * 3.3, h * .25, h * .72);
@@ -668,7 +765,12 @@
         drawWorldBeacon(w, horizon);
         drawTrainingRing(w, horizon);
 
-        drawAircraft(w, h);
+        if (state.viewMode === 'fpv') {
+          drawFpvDrone(w, h);
+          drawFpvHud(w, h);
+        } else {
+          drawAircraft(w, h);
+        }
 
         ctx.fillStyle = 'rgba(5, 18, 21, .58)'; ctx.fillRect(12, h - 30, w - 24, 18);
         ctx.fillStyle = '#e8f6ef'; ctx.font = '11px system-ui'; ctx.fillText(`WIND 08 kt · RUNWAY 18/36 · N/S · FUEL ${Math.round(state.fuel)}%`, 22, h - 18);
@@ -689,6 +791,7 @@
       root.querySelector('#fs-start').addEventListener('click', startFlight);
       root.querySelector('#fs-pause').addEventListener('click', togglePause);
       root.querySelector('#fs-reset').addEventListener('click', resetFlight);
+      root.querySelector('#fs-view-toggle').addEventListener('click', toggleView);
       window.addEventListener('resize', resize);
       window.addEventListener('gamepadconnected', updateGamepadLabel);
       window.addEventListener('gamepaddisconnected', updateGamepadLabel);
@@ -696,6 +799,7 @@
         keys.add(event.code);
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
         if (event.code === 'KeyP' && !event.repeat) togglePause();
+        if (event.code === 'KeyV' && !event.repeat) toggleView();
         if (event.code === 'Enter') startFlight();
       });
       window.addEventListener('keyup', event => keys.delete(event.code));

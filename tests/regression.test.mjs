@@ -47,11 +47,23 @@ test('terrain and landmarks use fixed world coordinates', () => {
   assert.match(simulator, /const TERRAIN_TREES = Object\.freeze\(\[/);
   assert.match(simulator, /function drawWorldTerrain\(/);
   assert.match(simulator, /function drawWorldTree\(/);
-  assert.match(simulator, /TERRAIN_TREES\s*\.map\(tree => \(\{ tree, point: projectWorldPoint\(tree\.x, tree\.z/);
+  assert.match(simulator, /getWorldTrees\(\)\s*\.map\(tree => \(\{ tree, point: projectWorldPoint\(tree\.x, tree\.z/);
   assert.match(simulator, /const BEACON = Object\.freeze\(\{ x: 0, z: 1050 \}\)/);
   assert.match(simulator, /const TRAINING_RING = Object\.freeze\(\{ x: 140, z: 900 \}\)/);
   assert.doesNotMatch(simulator, /projectWorldPoint\(0, state\.worldZ \+ 1050/);
   assert.doesNotMatch(simulator, /projectWorldPoint\(140, state\.worldZ \+ 900/);
+});
+
+test('open-world FPV view has a switchable drone camera and procedural landmarks', () => {
+  assert.match(simulator, /id="fs-view-toggle"/);
+  assert.match(simulator, /viewMode: 'fpv'/);
+  assert.match(simulator, /function toggleView\(/);
+  assert.match(simulator, /function drawFpvDrone\(/);
+  assert.match(simulator, /function drawFpvHud\(/);
+  assert.match(simulator, /function worldNoise\(/);
+  assert.match(simulator, /function getWorldTrees\(/);
+  assert.match(simulator, /event\.code === 'KeyV'/);
+  assert.match(simulator, /OPEN WORLD/);
 });
 
 test('turning changes both heading and aircraft world position', () => {

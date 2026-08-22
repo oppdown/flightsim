@@ -26,8 +26,8 @@ test("server-renders the public Flight Lab site", async () => {
   assert.match(html, /Learn the runway by flying it\./);
   assert.match(html, /src="\/flight-simulator\.html"/);
   assert.match(html, /Changelog/);
-  assert.match(html, /Any aircraft-to-ground contact now registers as a landing event\./);
-  assert.match(html, /Safe touchdown constraints remain separately graded/);
+  assert.match(html, /Added a low-altitude first-person FPV view/);
+  assert.match(html, /Added a V key \/ button toggle/);
   assert.match(html, /https:\/\/github\.com\/oppdown\/flightsim/);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview|SkeletonPreview/);
 });
@@ -45,5 +45,5 @@ test("the public site keeps the simulator asset and source history", async () =>
   assert.match(page, /src="\/flight-simulator\.html"/);
   assert.match(layout, /Flight Lab · Takeoff & Landing Trainer/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton|WRANGLER_LOG_PATH/);
-  assert.match(changelog, /Register any aircraft-to-ground contact as a landing event/);
+  assert.match(changelog, /Added a first-person FPV view inspired by low-altitude drone flight/);
 });

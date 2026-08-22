@@ -1,6 +1,13 @@
 # Flight Lab Simulator Changelog
 
-## Unreleased — 2026-08-22
+## 0.3.0 — 2026-08-22
+
+- Added a first-person FPV view inspired by low-altitude drone flight.
+- Added a switchable chase camera with `V` so testers can compare perspectives.
+- Extended tree landmarks procedurally across the open world instead of clustering them near the runway.
+- Added an FPV HUD for heading, battery, altitude, speed, and vertical speed.
+
+## 0.2.1 — 2026-08-22
 
 - Register any aircraft-to-ground contact as a landing event.
 - Keep the existing safe-landing score constraints separate from landing registration.

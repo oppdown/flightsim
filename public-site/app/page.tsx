@@ -1,12 +1,12 @@
 const changes = [
   {
-    version: "Unreleased",
+    version: "0.3.0",
     date: "August 22, 2026",
-    title: "Ground contact and public iteration workflow",
+    title: "Open-world FPV pass",
     details: [
-      "Any aircraft-to-ground contact now registers as a landing event.",
-      "Safe touchdown constraints remain separately graded for speed, pitch, and roll.",
-      "The public site now carries the simulator and its change history.",
+      "Added a low-altitude first-person FPV view with a drone frame and telemetry HUD.",
+      "Added a V key / button toggle between FPV and chase views.",
+      "Extended procedural tree landmarks across the open world.",
     ],
   },
   {
@@ -50,10 +50,10 @@ export default function Home() {
 
       <section id="top" className="hero-grid" aria-labelledby="page-title">
         <div className="hero-copy">
-          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · BUILD 0.2</p>
+          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · BUILD 0.3</p>
           <h1 id="page-title">Learn the runway by flying it.</h1>
           <p className="hero-lede">
-            A focused, deterministic flight simulator for practicing takeoff,
+            A focused, deterministic open world for low-altitude flight, FPV exploration,
             turns, approach, and touchdown with a mouse, keyboard, or Xbox controller.
           </p>
           <div className="hero-actions">
@@ -63,8 +63,8 @@ export default function Home() {
         </div>
         <aside className="hero-note" aria-label="Current build summary">
           <p className="note-label">Current build</p>
-          <p className="note-value">World terrain · 18 / 36</p>
-          <p className="note-copy">The runway stays fixed while the aircraft moves through the environment.</p>
+          <p className="note-value">Open world · FPV + chase</p>
+          <p className="note-copy">The runway stays fixed while the aircraft moves through terrain, trees, and distant landmarks.</p>
           <div className="note-rule" />
           <p className="note-label">Test status</p>
           <p className="note-value"><span className="status-dot" /> 9 regression checks passing</p>
