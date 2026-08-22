@@ -153,9 +153,19 @@ test('throttle feedback sits below the primary flight readouts', () => {
 
 test('flight starts at idle and requires throttle plus nose-up input for liftoff', () => {
   assert.match(simulator, /altitude: 0.*throttle: 0/);
+  assert.match(simulator, /airborne: false/);
   assert.match(simulator, /id="fs-throttle" class="fs-readout-value">0<\/span>%/);
   assert.match(simulator, /const acceleration = state\.throttle \* 27 - drag/);
   assert.match(simulator, /const lift = Math\.max\(0, state\.speed - 54\) \* \(state\.pitch > 1 \? \.54 \+ flapLift : 0\)/);
+  assert.match(simulator, /const liftoff = !state\.airborne && state\.altitude === 0 && state\.speed >= 60 && state\.pitch > 1/);
+  assert.match(simulator, /const airborne = state\.airborne/);
+  assert.doesNotMatch(simulator, /const airborne = state\.altitude > 0 \|\| state\.speed > 60/);
+});
+
+test('instrument status distinguishes ground roll from airborne flight', () => {
+  assert.match(simulator, /id="fs-flight-phase">GROUND ROLL/);
+  assert.match(simulator, /state\.countdown > 0 \? 'PREFLIGHT' : \(state\.airborne \? 'AIRBORNE' : 'GROUND ROLL'\)/);
+  assert.match(simulator, /state\.altitude === 0 && state\.airborne && state\.verticalSpeed <= 0/);
 });
 
 test('start flight uses a five-second centered preflight countdown', () => {
@@ -194,7 +204,8 @@ test('approach status text follows the active objective', () => {
 });
 
 test('low-speed flight has a sink path instead of freezing altitude', () => {
-  assert.match(simulator, /const airborne = state\.altitude > 0 \|\| state\.speed > 60/);
+  assert.match(simulator, /const airborne = state\.airborne/);
+  assert.match(simulator, /const liftoff = !state\.airborne && state\.altitude === 0 && state\.speed >= 60 && state\.pitch > 1/);
   assert.match(simulator, /const stallSink = Math\.max\(0, 52 - state\.speed\) \* \.28/);
   assert.match(simulator, /const lowSpeedGravity = state\.speed < 18 \? 9 : 0/);
   assert.match(simulator, /state\.verticalSpeed = climbRate/);

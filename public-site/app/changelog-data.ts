@@ -7,6 +7,16 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.011",
+    date: "August 22, 2026",
+    title: "Ground contact and liftoff physics",
+    details: [
+      "Added an explicit ground-roll / airborne state so 0 ft readings match physical runway or terrain contact.",
+      "Required at least 60 mph and positive nose-up pitch before liftoff; throttle alone now accelerates the aircraft along the ground.",
+      "Added a live phase instrument for preflight, ground roll, and airborne flight.",
+    ],
+  },
+  {
     version: "v0.1.010",
     date: "August 22, 2026",
     title: "Preflight countdown",

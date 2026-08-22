@@ -287,6 +287,7 @@
               <p id="fs-hsi-attitude" class="fs-instrument-caption">Bank 0° · Pitch 0°</p>
             </div>
             <div class="fs-instrument-card fs-instrument-stack">
+              <div class="fs-instrument-row"><span>Phase</span><strong id="fs-flight-phase">GROUND ROLL</strong></div>
               <div class="fs-instrument-row"><span>VSI</span><strong><span id="fs-vsi">0</span> ft/s</strong></div>
               <div class="fs-instrument-row"><span>Altitude</span><strong><span id="fs-altitude-indicator">0</span> ft</strong></div>
               <div class="fs-instrument-row"><span>Airspeed</span><strong><span id="fs-airspeed-indicator">0</span> mph</strong></div>
@@ -341,7 +342,7 @@
       const keys = new Set();
       const pointer = { active: false, x: 0, y: 0 };
       const view = { width: 0, height: 0, dpr: 1 };
-      const initialState = () => ({ running: false, paused: false, countdown: 0, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
+      const initialState = () => ({ running: false, paused: false, countdown: 0, airborne: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
@@ -635,7 +636,9 @@
         const drag = 3.2 + state.speed * .075 + Math.abs(state.pitch) * .08 + flapDrag + brakeInput * 18;
         const acceleration = state.throttle * 27 - drag;
         state.speed = clamp(state.speed + acceleration * dt, 0, 210);
-        const airborne = state.altitude > 0 || state.speed > 60;
+        const liftoff = !state.airborne && state.altitude === 0 && state.speed >= 60 && state.pitch > 1;
+        if (liftoff) state.airborne = true;
+        const airborne = state.airborne;
         const lift = Math.max(0, state.speed - 54) * (state.pitch > 1 ? .54 + flapLift : 0);
         const stallSink = Math.max(0, 52 - state.speed) * .28;
         const lowSpeedGravity = state.speed < 18 ? 9 : 0;
@@ -651,6 +654,7 @@
 
         if (state.altitude < 0) {
           state.altitude = 0;
+          state.airborne = false;
           if (state.speed < 42 && Math.abs(state.pitch) < 7) {
             state.score = Math.max(0, state.score + (state.speed < 12 ? .04 : -.08));
           } else if (state.speed > 80 || Math.abs(state.roll) > 16) {
@@ -658,6 +662,7 @@
             state.score = Math.max(0, state.score - .4);
           }
         }
+        if (state.altitude === 0 && state.airborne && state.verticalSpeed <= 0) state.airborne = false;
 
         if (state.objective === 1 && state.speed >= 55 && state.altitude >= 40) {
           state.objective = 2;
@@ -703,6 +708,7 @@
         el('#fs-hsi-card').style.transform = `rotate(${-state.heading}deg)`;
         el('#fs-hsi-aircraft').style.transform = `translate(-50%, -50%) rotate(${state.roll}deg)`;
         el('#fs-hsi-attitude').textContent = `Bank ${Math.round(state.roll)}° · Pitch ${Math.round(state.pitch)}°`;
+        el('#fs-flight-phase').textContent = state.countdown > 0 ? 'PREFLIGHT' : (state.airborne ? 'AIRBORNE' : 'GROUND ROLL');
         el('#fs-vsi').textContent = Math.round(state.verticalSpeed);
         el('#fs-altitude-indicator').textContent = Math.round(state.altitude);
         el('#fs-airspeed-indicator').textContent = Math.round(state.speed);

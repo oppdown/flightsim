@@ -1,5 +1,11 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.011 — 2026-08-22
+
+- Added an explicit ground-roll / airborne flight state so 0 ft readings match the aircraft's physical contact with the runway or terrain.
+- Required both 60 mph airspeed and positive nose-up pitch before liftoff; throttle alone now accelerates the aircraft along the ground.
+- Added a live flight-phase instrument so testers can distinguish preflight, ground roll, and airborne flight.
+
 ## v0.1.010 — 2026-08-22
 
 - Added a five-second preflight countdown after Start flight.
