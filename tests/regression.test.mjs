@@ -27,11 +27,25 @@ test('simulator JavaScript parses without syntax errors', () => {
 test('runway is projected from world-relative coordinates', () => {
   assert.match(simulator, /function projectWorldPoint\(/);
   assert.match(simulator, /function drawWorldRunway\(/);
-  assert.match(simulator, /projectWorldPoint\(-runwayHalfWidth, z/);
-  assert.match(simulator, /projectWorldPoint\(runwayHalfWidth, z/);
+  assert.match(simulator, /const RUNWAY = Object\.freeze\(\{ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 \}\)/);
+  assert.match(simulator, /projectWorldPoint\(RUNWAY\.x - RUNWAY\.halfWidth, z/);
+  assert.match(simulator, /projectWorldPoint\(RUNWAY\.x \+ RUNWAY\.halfWidth, z/);
+  assert.match(simulator, /RUNWAY\.startZ \+ \(RUNWAY\.endZ - RUNWAY\.startZ\)/);
   assert.match(simulator, /state\.worldZ/);
-  assert.doesNotMatch(simulator, /const runwayShift\s*=/);
-  assert.doesNotMatch(simulator, /const runwayTilt\s*=/);
+  assert.doesNotMatch(simulator, /const startZ = state\.worldZ/);
+  assert.doesNotMatch(simulator, /const endZ = state\.worldZ/);
+});
+
+test('terrain and landmarks use fixed world coordinates', () => {
+  assert.match(simulator, /const TERRAIN_FIELDS = Object\.freeze\(\[/);
+  assert.match(simulator, /const TERRAIN_TREES = Object\.freeze\(\[/);
+  assert.match(simulator, /function drawWorldTerrain\(/);
+  assert.match(simulator, /function drawWorldTree\(/);
+  assert.match(simulator, /TERRAIN_TREES\s*\.map\(tree => \(\{ tree, point: projectWorldPoint\(tree\.x, tree\.z/);
+  assert.match(simulator, /const BEACON = Object\.freeze\(\{ x: 0, z: 1050 \}\)/);
+  assert.match(simulator, /const TRAINING_RING = Object\.freeze\(\{ x: 140, z: 900 \}\)/);
+  assert.doesNotMatch(simulator, /projectWorldPoint\(0, state\.worldZ \+ 1050/);
+  assert.doesNotMatch(simulator, /projectWorldPoint\(140, state\.worldZ \+ 900/);
 });
 
 test('turning changes both heading and aircraft world position', () => {

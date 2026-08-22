@@ -1,6 +1,6 @@
 # Flight Lab Simulator
 
-Standalone browser flight-simulator prototype. It is intentionally independent of the other projects in the workspace.
+Standalone browser flight-simulator prototype with world-anchored terrain, tree landmarks, and runway projection. It is intentionally independent of the other projects in the workspace.
 
 ## Run it
 
@@ -22,4 +22,4 @@ Open `index.html` in a browser, or serve this folder with any static web server.
 npm test
 ```
 
-The checks validate the standalone page, JavaScript syntax, world-relative runway projection, synchronized turn state, and control mappings.
+The checks validate the standalone page, JavaScript syntax, stationary world-relative runway projection, fixed terrain and landmarks, synchronized turn state, landing behavior, and control mappings.

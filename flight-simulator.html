@@ -143,7 +143,7 @@
     <div class="fs-layout">
       <section class="fs-cockpit" aria-label="Flight view">
         <div class="fs-canvas-wrap">
-          <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, runway, aircraft reticle, and training ring"></canvas>
+          <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, terrain, trees, stationary runway, aircraft reticle, and training ring"></canvas>
           <div class="fs-canvas-label">CHASE VIEW · TRAINING SECTOR 01</div>
           <div class="fs-reticle" aria-hidden="true"></div>
         </div>
@@ -198,6 +198,28 @@
       const pointer = { active: false, x: 0, y: 0 };
       const view = { width: 0, height: 0, dpr: 1 };
       const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: .58, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0 });
+      const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
+      const BEACON = Object.freeze({ x: 0, z: 1050 });
+      const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
+      const TERRAIN_FIELDS = Object.freeze([
+        { left: -880, right: -90, startZ: -520, endZ: 760, fill: 'rgba(91, 119, 79, .34)', line: 'rgba(185, 201, 132, .22)' },
+        { left: 90, right: 850, startZ: -520, endZ: 620, fill: 'rgba(118, 129, 76, .30)', line: 'rgba(220, 207, 129, .20)' },
+        { left: -920, right: -90, startZ: 820, endZ: 2050, fill: 'rgba(71, 111, 86, .34)', line: 'rgba(160, 207, 143, .20)' },
+        { left: 90, right: 940, startZ: 680, endZ: 1880, fill: 'rgba(104, 119, 72, .32)', line: 'rgba(210, 194, 111, .20)' },
+        { left: -1100, right: -90, startZ: 2140, endZ: 3900, fill: 'rgba(59, 95, 78, .36)', line: 'rgba(137, 180, 125, .18)' },
+        { left: 90, right: 1100, startZ: 1980, endZ: 3900, fill: 'rgba(105, 112, 68, .34)', line: 'rgba(200, 182, 102, .18)' }
+      ]);
+      const TERRAIN_TREES = Object.freeze([
+        { x: -155, z: 290, size: 1.05 }, { x: 165, z: 360, size: 1.18 },
+        { x: -235, z: 610, size: .86 }, { x: 250, z: 720, size: 1.06 },
+        { x: -340, z: 980, size: 1.22 }, { x: 330, z: 1090, size: .94 },
+        { x: -170, z: 1320, size: .92 }, { x: 185, z: 1410, size: 1.15 },
+        { x: -520, z: 1580, size: 1.08 }, { x: 510, z: 1710, size: 1.24 },
+        { x: -285, z: 1980, size: .95 }, { x: 300, z: 2140, size: 1.08 },
+        { x: -720, z: 2460, size: 1.32 }, { x: 720, z: 2580, size: 1.18 },
+        { x: -460, z: 2920, size: 1.04 }, { x: 470, z: 3050, size: 1.28 },
+        { x: -860, z: 3380, size: 1.2 }, { x: 870, z: 3460, size: 1.08 }
+      ]);
       let state = initialState();
       let lastFrame = performance.now();
       let accumulator = 0;
@@ -409,17 +431,81 @@
         };
       }
 
+      function drawWorldTerrain(w, h, horizon) {
+        TERRAIN_FIELDS.forEach(field => {
+          const points = [
+            projectWorldPoint(field.left, field.startZ, w, horizon),
+            projectWorldPoint(field.right, field.startZ, w, horizon),
+            projectWorldPoint(field.right, field.endZ, w, horizon),
+            projectWorldPoint(field.left, field.endZ, w, horizon)
+          ];
+          if (points.some(point => !point)) return;
+          ctx.fillStyle = field.fill;
+          ctx.beginPath();
+          points.forEach((point, index) => index === 0 ? ctx.moveTo(point.x, point.y) : ctx.lineTo(point.x, point.y));
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = field.line;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let index = 0; index < points.length; index += 1) {
+            const first = points[index];
+            const second = points[(index + 1) % points.length];
+            ctx.moveTo(first.x, first.y);
+            ctx.lineTo(second.x, second.y);
+          }
+          ctx.stroke();
+        });
+
+        ctx.strokeStyle = 'rgba(31, 69, 58, .22)';
+        ctx.lineWidth = 1;
+        for (let z = -200; z <= RUNWAY.endZ; z += 280) {
+          const near = projectWorldPoint(-1100, z, w, horizon);
+          const far = projectWorldPoint(1100, z, w, horizon);
+          if (!near || !far) continue;
+          ctx.beginPath(); ctx.moveTo(near.x, near.y); ctx.lineTo(far.x, far.y); ctx.stroke();
+        }
+      }
+
+      function drawWorldTree(tree, w, h, horizon) {
+        const point = projectWorldPoint(tree.x, tree.z, w, horizon);
+        if (!point || point.y < 8 || point.y > h + 26) return;
+        const size = clamp(34000 / (point.forward + 300) * tree.size, 9, 58);
+        const trunkWidth = Math.max(2, size * .12);
+        ctx.fillStyle = 'rgba(62, 50, 34, .82)';
+        ctx.fillRect(point.x - trunkWidth / 2, point.y - size * .44, trunkWidth, size * .44);
+        ctx.fillStyle = 'rgba(34, 75, 58, .92)';
+        ctx.beginPath();
+        ctx.moveTo(point.x, point.y - size * 1.38);
+        ctx.lineTo(point.x - size * .52, point.y - size * .25);
+        ctx.lineTo(point.x + size * .52, point.y - size * .25);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = 'rgba(66, 115, 77, .96)';
+        ctx.beginPath();
+        ctx.moveTo(point.x, point.y - size * 1.08);
+        ctx.lineTo(point.x - size * .42, point.y - size * .08);
+        ctx.lineTo(point.x + size * .42, point.y - size * .08);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawWorldTrees(w, h, horizon) {
+        const visibleTrees = TERRAIN_TREES
+          .map(tree => ({ tree, point: projectWorldPoint(tree.x, tree.z, w, horizon) }))
+          .filter(item => item.point && item.point.y > -80 && item.point.y < h + 26)
+          .sort((a, b) => b.point.forward - a.point.forward);
+        visibleTrees.forEach(item => drawWorldTree(item.tree, w, h, horizon));
+      }
+
       function drawWorldRunway(w, h, horizon) {
-        const runwayHalfWidth = 45;
-        const startZ = state.worldZ - 220;
-        const endZ = state.worldZ + 2600;
         const segments = 42;
         const left = [];
         const right = [];
         for (let index = 0; index <= segments; index += 1) {
-          const z = startZ + (endZ - startZ) * index / segments;
-          left.push(projectWorldPoint(-runwayHalfWidth, z, w, horizon));
-          right.push(projectWorldPoint(runwayHalfWidth, z, w, horizon));
+          const z = RUNWAY.startZ + (RUNWAY.endZ - RUNWAY.startZ) * index / segments;
+          left.push(projectWorldPoint(RUNWAY.x - RUNWAY.halfWidth, z, w, horizon));
+          right.push(projectWorldPoint(RUNWAY.x + RUNWAY.halfWidth, z, w, horizon));
         }
 
         ctx.fillStyle = 'rgba(31, 45, 48, .92)';
@@ -450,21 +536,21 @@
         ctx.strokeStyle = 'rgba(242, 195, 107, .92)'; ctx.lineWidth = 2; ctx.setLineDash([12, 14]);
         ctx.beginPath();
         for (let index = 1; index < segments; index += 2) {
-          const first = projectWorldPoint(0, startZ + (endZ - startZ) * index / segments, w, horizon);
-          const second = projectWorldPoint(0, startZ + (endZ - startZ) * (index + 1) / segments, w, horizon);
+          const first = projectWorldPoint(RUNWAY.x, RUNWAY.startZ + (RUNWAY.endZ - RUNWAY.startZ) * index / segments, w, horizon);
+          const second = projectWorldPoint(RUNWAY.x, RUNWAY.startZ + (RUNWAY.endZ - RUNWAY.startZ) * (index + 1) / segments, w, horizon);
           if (!first || !second) continue;
           ctx.moveTo(first.x, first.y); ctx.lineTo(second.x, second.y);
         }
         ctx.stroke(); ctx.setLineDash([]);
 
-        const labelPoint = projectWorldPoint(0, state.worldZ + 720, w, horizon);
+        const labelPoint = projectWorldPoint(RUNWAY.x, RUNWAY.startZ + 720, w, horizon);
         if (labelPoint && labelPoint.y > 12 && labelPoint.y < h - 44) {
           ctx.fillStyle = 'rgba(244, 246, 225, .82)'; ctx.font = '10px system-ui'; ctx.fillText('09', labelPoint.x + 7, labelPoint.y - 5);
         }
       }
 
       function drawWorldBeacon(w, horizon) {
-        const point = projectWorldPoint(0, state.worldZ + 1050, w, horizon);
+        const point = projectWorldPoint(BEACON.x, BEACON.z, w, horizon);
         if (!point || point.y < 8 || point.y > view.height - 40) return;
         ctx.strokeStyle = 'rgba(224, 244, 233, .82)'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(point.x, point.y + 18); ctx.lineTo(point.x, point.y - 5); ctx.stroke();
@@ -472,7 +558,7 @@
       }
 
       function drawTrainingRing(w, horizon) {
-        const point = projectWorldPoint(140, state.worldZ + 900, w, horizon);
+        const point = projectWorldPoint(TRAINING_RING.x, TRAINING_RING.z, w, horizon);
         if (!point || point.y < 8 || point.y > view.height - 44) return;
         const ringSize = clamp(54 - state.altitude * .012, 20, 54);
         ctx.strokeStyle = state.objective === 2 ? 'rgba(242, 195, 107, .95)' : 'rgba(242, 195, 107, .28)'; ctx.lineWidth = 3;
@@ -521,20 +607,8 @@
         }
         ctx.restore();
 
-        ctx.save();
-        ctx.translate(w / 2, horizon);
-        ctx.rotate(-rad(state.roll) * .38);
-        ctx.translate(-w / 2, -horizon);
-        ctx.strokeStyle = 'rgba(14, 41, 42, .34)'; ctx.lineWidth = 1;
-        for (let i = -7; i <= 7; i++) {
-          ctx.beginPath(); ctx.moveTo(w / 2, horizon + 4); ctx.lineTo(w / 2 + i * w * .18, h); ctx.stroke();
-        }
-        for (let i = 1; i < 8; i++) {
-          const y = horizon + Math.pow(i / 8, .62) * (h - horizon);
-          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-        }
-        ctx.restore();
-
+        drawWorldTerrain(w, h, horizon);
+        drawWorldTrees(w, h, horizon);
         drawWorldRunway(w, h, horizon);
         drawWorldBeacon(w, horizon);
         drawTrainingRing(w, horizon);
