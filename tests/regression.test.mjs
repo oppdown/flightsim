@@ -78,6 +78,24 @@ test('open-world FPV view has a switchable drone camera and procedural landmarks
   assert.match(simulator, /Microsoft SideWinder/);
   assert.match(simulator, /function joystickProfileFor\(/);
   assert.match(simulator, /function updateJoystickUi\(/);
+  assert.match(simulator, /id="fs-invert-pitch"/);
+  assert.match(simulator, /id="fs-invert-roll"/);
+  assert.match(simulator, /id="fs-invert-yaw"/);
+});
+
+test('axis direction selectors invert pitch, roll, and yaw across control devices', () => {
+  assert.match(simulator, /const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions'/);
+  assert.match(simulator, /function axisSign\(axis\)/);
+  assert.match(simulator, /axisSign\('pitch'\) \* \(keyboard\.pitch \* \.55 \+ mouse\.pitch \* \.8 \+ pad\.pitch\)/);
+  assert.match(simulator, /axisSign\('roll'\) \* \(keyboard\.roll \* \.7 \+ mouse\.roll \* \.8 \+ pad\.roll\)/);
+  assert.match(simulator, /axisSign\('yaw'\) \* \(keyboard\.yaw \* \.7 \+ pad\.yaw\)/);
+  assert.match(simulator, /window\.localStorage\.setItem\(CONTROL_INVERSION_STORAGE_KEY/);
+});
+
+test('transient inputs clear when the browser loses focus', () => {
+  assert.match(simulator, /function clearTransientInputs\(\)/);
+  assert.match(simulator, /window\.addEventListener\('blur', clearTransientInputs\)/);
+  assert.match(simulator, /if \(document\.hidden\) clearTransientInputs\(\)/);
 });
 
 test('PWA package has an install manifest and offline shell', async () => {

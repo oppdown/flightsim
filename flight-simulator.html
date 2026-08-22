@@ -77,6 +77,13 @@
     #flight-simulator .fs-controls-menu h3 { margin: 0; }
     #flight-simulator .fs-controls-menu-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
     #flight-simulator .fs-controls-menu-copy { margin: 0 0 13px; color: var(--fs-muted); font-size: 12px; }
+    #flight-simulator .fs-inversion-group { margin-bottom: 13px; padding: 11px; border: 1px solid rgba(191, 222, 214, .12); border-radius: 8px; background: rgba(9, 20, 24, .55); }
+    #flight-simulator .fs-inversion-heading { margin: 0 0 8px; color: var(--fs-teal); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+    #flight-simulator .fs-inversion-copy { margin: 0 0 9px; color: var(--fs-muted); font-size: 12px; }
+    #flight-simulator .fs-axis-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    #flight-simulator .fs-axis-grid label { display: grid; gap: 4px; color: var(--fs-ink); font-size: 12px; }
+    #flight-simulator .fs-axis-grid select { width: 100%; padding: 6px 7px; border: 1px solid var(--fs-line); border-radius: 6px; color: var(--fs-ink); background: #162d32; font: inherit; }
+    #flight-simulator .fs-axis-grid select:focus-visible { outline: 2px solid var(--fs-teal); outline-offset: 2px; }
     #flight-simulator .fs-mapping-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--fs-line); }
     #flight-simulator .fs-mapping-group { padding: 11px; background: rgba(9, 20, 24, .86); }
     #flight-simulator .fs-mapping-group h4 { margin: 0 0 8px; color: var(--fs-teal); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
@@ -163,7 +170,31 @@
         <h3>Key mapping</h3>
         <button id="fs-controls-close" type="button">Close</button>
       </div>
-      <p class="fs-controls-menu-copy">Use the keyboard and mouse, or connect a joystick before starting the flight.</p>
+      <p class="fs-controls-menu-copy">Use the keyboard and mouse, or connect a joystick before starting the flight. Axis direction settings apply to every control device.</p>
+      <div class="fs-inversion-group" aria-labelledby="fs-inversion-heading">
+        <h4 id="fs-inversion-heading" class="fs-inversion-heading">Axis direction</h4>
+        <p class="fs-inversion-copy">Choose Normal or Inverted for each flight axis. Your choices are saved on this device.</p>
+        <div class="fs-axis-grid">
+          <label for="fs-invert-pitch">Pitch
+            <select id="fs-invert-pitch" name="pitch-direction">
+              <option value="normal">Normal</option>
+              <option value="inverted">Inverted</option>
+            </select>
+          </label>
+          <label for="fs-invert-roll">Roll
+            <select id="fs-invert-roll" name="roll-direction">
+              <option value="normal">Normal</option>
+              <option value="inverted">Inverted</option>
+            </select>
+          </label>
+          <label for="fs-invert-yaw">Yaw
+            <select id="fs-invert-yaw" name="yaw-direction">
+              <option value="normal">Normal</option>
+              <option value="inverted">Inverted</option>
+            </select>
+          </label>
+        </div>
+      </div>
       <div class="fs-mapping-grid">
         <div class="fs-mapping-group">
           <h4>Keyboard + mouse</h4>
@@ -269,6 +300,8 @@
       let lastFrame = performance.now();
       let accumulator = 0;
       let gamepadActionLatch = { start: false, pause: false, reset: false };
+      const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions';
+      const controlInversions = { pitch: false, roll: false, yaw: false };
       const JOYSTICK_PROFILES = Object.freeze({
         xinput: Object.freeze({
           name: 'Xbox-style gamepad',
@@ -317,6 +350,32 @@
       const lerp = (a, b, amount) => a + (b - a) * amount;
       const rad = degrees => degrees * Math.PI / 180;
       const el = id => root.querySelector(id);
+
+      function axisSign(axis) {
+        return controlInversions[axis] ? -1 : 1;
+      }
+
+      function loadControlInversions() {
+        try {
+          const saved = JSON.parse(window.localStorage.getItem(CONTROL_INVERSION_STORAGE_KEY) || '{}');
+          for (const axis of Object.keys(controlInversions)) controlInversions[axis] = saved[axis] === true;
+        } catch {
+          for (const axis of Object.keys(controlInversions)) controlInversions[axis] = false;
+        }
+      }
+
+      function saveControlInversions() {
+        try { window.localStorage.setItem(CONTROL_INVERSION_STORAGE_KEY, JSON.stringify(controlInversions)); } catch {}
+      }
+
+      function syncControlInversionUi() {
+        for (const axis of Object.keys(controlInversions)) el(`#fs-invert-${axis}`).value = controlInversions[axis] ? 'inverted' : 'normal';
+      }
+
+      function setControlInversion(axis, value) {
+        controlInversions[axis] = value === 'inverted';
+        saveControlInversions();
+      }
 
       function resize() {
         const rect = canvas.getBoundingClientRect();
@@ -456,9 +515,9 @@
         const keyboard = keyboardAxes();
         const mouse = pointerAxes();
         const pad = gamepadAxes();
-        const pitchInput = clamp(keyboard.pitch * .55 + mouse.pitch * .8 + pad.pitch, -1, 1);
-        const rollInput = clamp(keyboard.roll * .7 + mouse.roll * .8 + pad.roll, -1, 1);
-        const yawInput = clamp(keyboard.yaw * .7 + pad.yaw, -1, 1);
+        const pitchInput = clamp(axisSign('pitch') * (keyboard.pitch * .55 + mouse.pitch * .8 + pad.pitch), -1, 1);
+        const rollInput = clamp(axisSign('roll') * (keyboard.roll * .7 + mouse.roll * .8 + pad.roll), -1, 1);
+        const yawInput = clamp(axisSign('yaw') * (keyboard.yaw * .7 + pad.yaw), -1, 1);
         const throttleInput = clamp(keyboard.throttle + pad.throttle, -1, 1);
         const brakeInput = clamp(keyboard.brake + pad.brake, 0, 1);
 
@@ -914,9 +973,17 @@
       root.querySelector('#fs-view-toggle').addEventListener('click', toggleView);
       root.querySelector('#fs-controls-open').addEventListener('click', toggleControlsMenu);
       root.querySelector('#fs-controls-close').addEventListener('click', toggleControlsMenu);
+      for (const axis of Object.keys(controlInversions)) el(`#fs-invert-${axis}`).addEventListener('change', event => setControlInversion(axis, event.target.value));
       window.addEventListener('resize', resize);
       window.addEventListener('gamepadconnected', updateGamepadLabel);
       window.addEventListener('gamepaddisconnected', updateGamepadLabel);
+      function clearTransientInputs() {
+        keys.clear();
+        pointer.active = false;
+        gamepadActionLatch = { start: false, pause: false, reset: false };
+      }
+      window.addEventListener('blur', clearTransientInputs);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) clearTransientInputs(); });
       window.addEventListener('keydown', event => {
         keys.add(event.code);
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
@@ -929,6 +996,8 @@
       canvas.addEventListener('pointermove', event => { pointer.active = true; pointer.x = event.clientX; pointer.y = event.clientY; });
       canvas.addEventListener('pointerleave', () => { pointer.active = false; });
       canvas.addEventListener('pointerdown', event => { pointer.active = true; canvas.setPointerCapture?.(event.pointerId); startFlight(); });
+      loadControlInversions();
+      syncControlInversionUi();
       resize(); resetFlight(); requestAnimationFrame(frame);
     })();
   </script>

@@ -7,6 +7,16 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.008",
+    date: "August 22, 2026",
+    title: "Control direction and focus recovery",
+    details: [
+      "Added Normal / Inverted selectors for pitch, roll, and yaw.",
+      "Applied axis direction consistently across keyboard, mouse, Xbox-style, and joystick inputs.",
+      "Cleared held inputs when the browser loses focus so controls cannot remain stuck.",
+    ],
+  },
+  {
     version: "v0.1.007",
     date: "August 22, 2026",
     title: "Runway start and throttle-gated liftoff",

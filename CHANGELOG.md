@@ -1,5 +1,11 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.008 — 2026-08-22
+
+- Added Normal / Inverted selectors for pitch, roll, and yaw.
+- Applied the selected direction consistently to keyboard, mouse, Xbox-style, and joystick inputs.
+- Cleared held keyboard, pointer, and one-shot gamepad actions when the browser loses focus.
+
 ## v0.1.007 — 2026-08-22
 
 - Start flights on the runway at 0% throttle and 0 ft altitude.

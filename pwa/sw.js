@@ -1,4 +1,4 @@
-const CACHE = 'flight-lab-v0.1.007';
+const CACHE = 'flight-lab-v0.1.008';
 const ASSETS = [
   './',
   './index.html',
