@@ -1,8 +1,14 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.007 — 2026-08-22
+
+- Start flights on the runway at 0% throttle and 0 ft altitude.
+- Require throttle input to build speed and make liftoff possible.
+- Keep level flight from gaining altitude unless the pilot pitches up.
+
 ## v0.1.006 — 2026-08-22
 
-- Removed all GitHub references and links from the public site.
+- Removed repository references and links from the public site.
 - Added a key-mapping menu with keyboard, mouse, Xbox-style, SideWinder, and Extreme 3D Pro profiles.
 - Added automatic joystick profile detection for Microsoft SideWinder and Logitech Extreme 3D Pro devices.
 - Rebuilt the PWA download as a self-contained browser package with its simulator, manifest, service worker, icon, and setup guide.

@@ -116,7 +116,7 @@
     #flight-simulator .fs-gamepad { color: var(--fs-teal); font-size: 12px; }
     #flight-simulator .fs-gamepad.disconnected { color: var(--fs-muted); }
     #flight-simulator .fs-meter { height: 5px; margin-top: 8px; overflow: hidden; border-radius: 10px; background: rgba(255,255,255,.10); }
-    #flight-simulator .fs-meter-fill { width: 58%; height: 100%; border-radius: inherit; background: var(--fs-teal); transition: width .12s linear; }
+    #flight-simulator .fs-meter-fill { width: 0%; height: 100%; border-radius: inherit; background: var(--fs-teal); transition: width .12s linear; }
     #flight-simulator .fs-throttle-strip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 10px; background: rgba(9, 20, 24, .96); }
     #flight-simulator .fs-throttle-strip .fs-meter { width: 100%; margin-top: 0; }
     #flight-simulator .fs-objective { color: var(--fs-muted); font-size: 12px; }
@@ -197,7 +197,7 @@
         <div class="fs-throttle-strip" aria-label="Throttle">
           <span class="fs-readout-label">Throttle</span>
           <div class="fs-meter"><div id="fs-throttle-meter" class="fs-meter-fill"></div></div>
-          <span><span id="fs-throttle" class="fs-readout-value">58</span>%</span>
+          <span><span id="fs-throttle" class="fs-readout-value">0</span>%</span>
         </div>
       </section>
 
@@ -241,7 +241,7 @@
       const keys = new Set();
       const pointer = { active: false, x: 0, y: 0 };
       const view = { width: 0, height: 0, dpr: 1 };
-      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: .58, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
+      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
@@ -472,7 +472,7 @@
         const acceleration = state.throttle * 27 - drag;
         state.speed = clamp(state.speed + acceleration * dt, 0, 210);
         const airborne = state.altitude > 0 || state.speed > 60;
-        const lift = Math.max(0, state.speed - 54) * (state.pitch > 1 ? .54 : .16);
+        const lift = Math.max(0, state.speed - 54) * (state.pitch > 1 ? .54 : 0);
         const stallSink = Math.max(0, 52 - state.speed) * .28;
         const lowSpeedGravity = state.speed < 18 ? 9 : 0;
         const climbRate = airborne ? Math.sin(rad(state.pitch)) * state.speed * .55 + lift - stallSink - lowSpeedGravity : 0;

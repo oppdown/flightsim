@@ -1,7 +1,7 @@
 {
   "name": "flight-lab-simulator",
   "private": true,
-  "version": "0.1.006",
+  "version": "0.1.007",
   "description": "Standalone browser flight simulator prototype with regression checks.",
   "type": "module",
   "scripts": {

@@ -7,6 +7,16 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.007",
+    date: "August 22, 2026",
+    title: "Runway start and throttle-gated liftoff",
+    details: [
+      "Start every flight on the runway at 0% throttle and 0 ft altitude.",
+      "Require throttle input to build speed before liftoff can occur.",
+      "Keep level flight from gaining altitude unless the pilot pitches up.",
+    ],
+  },
+  {
     version: "v0.1.006",
     date: "August 22, 2026",
     title: "Joystick profiles and clean public site",

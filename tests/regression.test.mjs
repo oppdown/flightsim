@@ -102,6 +102,13 @@ test('throttle feedback sits below the primary flight readouts', () => {
   assert.doesNotMatch(simulator.slice(statusPanelStart, statusPanelEnd), /fs-throttle-meter/);
 });
 
+test('flight starts at idle and requires throttle plus nose-up input for liftoff', () => {
+  assert.match(simulator, /altitude: 0.*throttle: 0/);
+  assert.match(simulator, /id="fs-throttle" class="fs-readout-value">0<\/span>%/);
+  assert.match(simulator, /const acceleration = state\.throttle \* 27 - drag/);
+  assert.match(simulator, /const lift = Math\.max\(0, state\.speed - 54\) \* \(state\.pitch > 1 \? \.54 : 0\)/);
+});
+
 test('turning changes both heading and aircraft world position', () => {
   assert.match(simulator, /const coordinatedTurnRate/);
   assert.match(simulator, /state\.heading\s*=.*coordinatedTurnRate/);
