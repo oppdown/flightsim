@@ -1,5 +1,13 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.004 — 2026-08-22
+
+- Opened pitch and roll response for aerobatic movement, including loops and barrel rolls.
+- Made world-item perspective account for altitude so distant trees and terrain recede naturally.
+- Reduced tree density and added a wide runway safety buffer so the approach remains visible.
+- Moved the throttle bar below the primary flight readouts and removed the FPV compass letters.
+- Removed the regression-status card from the public site while keeping the detailed changelog.
+
 ## 0.3.0 — 2026-08-22
 
 - Added a first-person FPV view inspired by low-altitude drone flight.

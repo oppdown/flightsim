@@ -28,6 +28,8 @@ test("server-renders the public Flight Lab site", async () => {
   assert.match(html, /Changelog/);
   assert.match(html, /Added a low-altitude first-person FPV view/);
   assert.match(html, /Added a V key \/ button toggle/);
+  assert.match(html, /v0\.1\.004/);
+  assert.doesNotMatch(html, /TEST STATUS|9 regression checks passing/i);
   assert.match(html, /https:\/\/github\.com\/oppdown\/flightsim/);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview|SkeletonPreview/);
 });

@@ -1,12 +1,14 @@
 const changes = [
   {
-    version: "0.3.0",
+    version: "v0.1.004",
     date: "August 22, 2026",
-    title: "Open-world FPV pass",
+    title: "Open-world flight clarity",
     details: [
       "Added a low-altitude first-person FPV view with a drone frame and telemetry HUD.",
       "Added a V key / button toggle between FPV and chase views.",
-      "Extended procedural tree landmarks across the open world.",
+      "Opened the full pitch and roll range for aerobatics such as loops and barrel rolls.",
+      "Scaled distant terrain items with altitude, cleared trees from the runway approach, and kept the ground readable.",
+      "Moved throttle feedback below the flight readouts and simplified the FPV compass.",
     ],
   },
   {
@@ -50,7 +52,7 @@ export default function Home() {
 
       <section id="top" className="hero-grid" aria-labelledby="page-title">
         <div className="hero-copy">
-          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · BUILD 0.3</p>
+          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.004</p>
           <h1 id="page-title">Learn the runway by flying it.</h1>
           <p className="hero-lede">
             A focused, deterministic open world for low-altitude flight, FPV exploration,
@@ -65,9 +67,6 @@ export default function Home() {
           <p className="note-label">Current build</p>
           <p className="note-value">Open world · FPV + chase</p>
           <p className="note-copy">The runway stays fixed while the aircraft moves through terrain, trees, and distant landmarks.</p>
-          <div className="note-rule" />
-          <p className="note-label">Test status</p>
-          <p className="note-value"><span className="status-dot" /> 9 regression checks passing</p>
         </aside>
       </section>
 

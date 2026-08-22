@@ -90,7 +90,7 @@
     #flight-simulator .fs-reticle::before { width: 32px; height: 1px; left: -8px; top: 8px; }
     #flight-simulator .fs-reticle::after { height: 32px; width: 1px; left: 8px; top: -8px; }
     #flight-simulator .fs-canvas-label { position: absolute; left: 12px; top: 10px; color: rgba(255,255,255,.74); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
-    #flight-simulator .fs-readouts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--fs-line); }
+    #flight-simulator .fs-readouts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--fs-line); }
     #flight-simulator .fs-readout { justify-content: space-between; gap: 5px; min-width: 0; padding: 9px 10px; background: rgba(9, 20, 24, .96); }
     #flight-simulator .fs-readout-label { color: var(--fs-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
     #flight-simulator .fs-readout-value { color: var(--fs-ink); font-variant-numeric: tabular-nums; font-weight: 500; }
@@ -106,6 +106,8 @@
     #flight-simulator .fs-gamepad.disconnected { color: var(--fs-muted); }
     #flight-simulator .fs-meter { height: 5px; margin-top: 8px; overflow: hidden; border-radius: 10px; background: rgba(255,255,255,.10); }
     #flight-simulator .fs-meter-fill { width: 58%; height: 100%; border-radius: inherit; background: var(--fs-teal); transition: width .12s linear; }
+    #flight-simulator .fs-throttle-strip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 10px; background: rgba(9, 20, 24, .96); }
+    #flight-simulator .fs-throttle-strip .fs-meter { width: 100%; margin-top: 0; }
     #flight-simulator .fs-objective { color: var(--fs-muted); font-size: 12px; }
     #flight-simulator .fs-objective strong { color: var(--fs-ink); font-weight: 500; }
     #flight-simulator .fs-status-row { justify-content: space-between; gap: 8px; padding-top: 12px; color: var(--fs-muted); font-size: 12px; }
@@ -118,7 +120,7 @@
       #flight-simulator .fs-head { align-items: flex-start; flex-direction: column; }
       #flight-simulator .fs-actions { justify-content: flex-start; }
       #flight-simulator .fs-layout { grid-template-columns: 1fr; }
-      #flight-simulator .fs-readouts { grid-template-columns: repeat(3, 1fr); }
+      #flight-simulator .fs-readouts { grid-template-columns: repeat(2, 1fr); }
       #flight-simulator .fs-readout { flex-direction: column; align-items: flex-start; }
     }
     @media (max-width: 420px) {
@@ -153,7 +155,11 @@
           <div class="fs-readout"><span class="fs-readout-label">Altitude</span><span><span id="fs-altitude" class="fs-readout-value">0</span> ft</span></div>
           <div class="fs-readout"><span class="fs-readout-label">Heading</span><span><span id="fs-heading" class="fs-readout-value">000</span>°</span></div>
           <div class="fs-readout"><span class="fs-readout-label">Pitch / Roll</span><span><span id="fs-attitude" class="fs-readout-value">0 / 0</span>°</span></div>
-          <div class="fs-readout"><span class="fs-readout-label">Throttle</span><span><span id="fs-throttle" class="fs-readout-value">58</span>%</span></div>
+        </div>
+        <div class="fs-throttle-strip" aria-label="Throttle">
+          <span class="fs-readout-label">Throttle</span>
+          <div class="fs-meter"><div id="fs-throttle-meter" class="fs-meter-fill"></div></div>
+          <span><span id="fs-throttle" class="fs-readout-value">58</span>%</span>
         </div>
       </section>
 
@@ -161,7 +167,6 @@
         <section class="fs-panel">
           <div class="fs-panel-heading"><h3>Flight status</h3><span id="fs-mode">READY</span></div>
           <div class="fs-objective"><strong id="fs-objective-title">Objective 1 · Take off</strong><br><span id="fs-objective-detail">Build speed above 55 mph, then raise the nose.</span></div>
-          <div class="fs-meter" aria-label="Throttle"><div id="fs-throttle-meter" class="fs-meter-fill"></div></div>
           <div class="fs-status-row"><span id="fs-score">Score 0</span><span id="fs-message" class="fs-status" aria-live="polite">Press Start flight</span></div>
         </section>
 
@@ -344,8 +349,8 @@
         const brakeInput = clamp(keyboard.brake + pad.brake, 0, 1);
 
         state.throttle = clamp(state.throttle + throttleInput * dt * .45, 0, 1);
-        state.pitch = lerp(state.pitch, pitchInput * 14, dt * 4.2);
-        state.roll = lerp(state.roll, rollInput * 32, dt * 4.8);
+        state.pitch = lerp(state.pitch, pitchInput * 180, dt * 2.6);
+        state.roll = lerp(state.roll, rollInput * 360, dt * 3.1);
         const coordinatedTurnRate = Math.sin(rad(state.roll)) * (4 + state.speed * .23);
         state.heading = (state.heading + (yawInput * 22 + coordinatedTurnRate) * dt + 360) % 360;
 
@@ -441,11 +446,13 @@
         const forward = dx * Math.sin(heading) + dz * Math.cos(heading);
         if (forward <= 8) return null;
         const focalLength = Math.max(180, w * .52);
-        const perspective = focalLength / (forward + 180);
+        const altitudeDepth = Math.max(0, state.altitude) * .38;
+        const perspective = focalLength / (forward + 180 + altitudeDepth);
         return {
           x: w / 2 + side * perspective,
           y: horizon + 260 * perspective - state.altitude * .045,
-          forward
+          forward,
+          perspective
         };
       }
 
@@ -538,7 +545,8 @@
       function drawWorldTree(tree, w, h, horizon) {
         const point = projectWorldPoint(tree.x, tree.z, w, horizon);
         if (!point || point.y < 8 || point.y > h + 26) return;
-        const size = clamp(34000 / (point.forward + 300) * tree.size, 9, 58);
+        const size = clamp(point.perspective * 190 * tree.size, 3, 58);
+        if (size < 4) return;
         const trunkWidth = Math.max(2, size * .12);
         ctx.fillStyle = 'rgba(62, 50, 34, .82)';
         ctx.fillRect(point.x - trunkWidth / 2, point.y - size * .44, trunkWidth, size * .44);
@@ -566,15 +574,17 @@
       function getWorldTrees() {
         const centerCellX = Math.floor(state.worldX / TERRAIN_CELL_SIZE);
         const centerCellZ = Math.floor(state.worldZ / TERRAIN_CELL_SIZE);
-        const trees = [...TERRAIN_TREES];
+        const runwayBuffer = RUNWAY.halfWidth + 170;
+        const trees = TERRAIN_TREES.filter(tree => Math.abs(tree.x - RUNWAY.x) >= runwayBuffer || tree.z < RUNWAY.startZ - 180 || tree.z > RUNWAY.endZ + 180);
         for (let cellX = centerCellX - 7; cellX <= centerCellX + 7; cellX += 1) {
           for (let cellZ = centerCellZ - 7; cellZ <= centerCellZ + 9; cellZ += 1) {
-            if (worldNoise(cellX, cellZ, 2) < .24) continue;
-            const count = worldNoise(cellX, cellZ, 5) > .72 ? 2 : 1;
+            if (worldNoise(cellX, cellZ, 2) < .62) continue;
+            const count = 1;
             for (let index = 0; index < count; index += 1) {
               const x = (cellX + .12 + worldNoise(cellX, cellZ, 10 + index) * .76) * TERRAIN_CELL_SIZE;
               const z = (cellZ + .12 + worldNoise(cellX, cellZ, 20 + index) * .76) * TERRAIN_CELL_SIZE;
-              const size = .72 + worldNoise(cellX, cellZ, 30 + index) * .78;
+              const size = .72 + worldNoise(cellX, cellZ, 30 + index) * .66;
+              if (Math.abs(x - RUNWAY.x) < runwayBuffer && z > RUNWAY.startZ - 180 && z < RUNWAY.endZ + 180) continue;
               trees.push({ x, z, size });
             }
           }
@@ -727,7 +737,6 @@
           ctx.beginPath(); ctx.moveTo(x, 36); ctx.lineTo(x, 36 + tickHeight); ctx.stroke();
         }
         ctx.font = '10px system-ui';
-        ctx.fillText('N      E      S      W', w / 2, 56);
 
         ctx.textAlign = 'left';
         ctx.fillText(`ACRO  ${state.viewMode.toUpperCase()}`, 18, h - 22);
@@ -738,7 +747,7 @@
 
       function draw() {
         const w = view.width, h = view.height;
-        const horizon = clamp(h * .48 + state.pitch * 3.3, h * .25, h * .72);
+        const horizon = clamp(h * .48 - Math.sin(rad(state.pitch)) * h * .25, h * .14, h * .82);
         ctx.clearRect(0, 0, w, h);
         const sky = ctx.createLinearGradient(0, 0, 0, horizon);
         sky.addColorStop(0, '#18515c'); sky.addColorStop(1, '#65b8b5');

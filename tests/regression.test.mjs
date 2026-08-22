@@ -64,6 +64,21 @@ test('open-world FPV view has a switchable drone camera and procedural landmarks
   assert.match(simulator, /function getWorldTrees\(/);
   assert.match(simulator, /event\.code === 'KeyV'/);
   assert.match(simulator, /OPEN WORLD/);
+  assert.match(simulator, /pitchInput \* 180/);
+  assert.match(simulator, /rollInput \* 360/);
+  assert.doesNotMatch(simulator, /fillText\('N\s+E\s+S\s+W'/);
+  assert.match(simulator, /const altitudeDepth = Math\.max\(0, state\.altitude\)/);
+  assert.match(simulator, /const runwayBuffer = RUNWAY\.halfWidth \+ 170/);
+});
+
+test('throttle feedback sits below the primary flight readouts', () => {
+  const readouts = simulator.indexOf('<div class="fs-readouts"');
+  const throttle = simulator.indexOf('<div class="fs-throttle-strip"');
+  assert.ok(readouts >= 0 && throttle > readouts);
+  assert.match(simulator, /id="fs-throttle-meter"/);
+  const statusPanelStart = simulator.indexOf('<aside class="fs-side"');
+  const statusPanelEnd = simulator.indexOf('<section class="fs-panel">', statusPanelStart + 1);
+  assert.doesNotMatch(simulator.slice(statusPanelStart, statusPanelEnd), /fs-throttle-meter/);
 });
 
 test('turning changes both heading and aircraft world position', () => {
