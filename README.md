@@ -1,6 +1,6 @@
 # Flight Lab Simulator
 
-Standalone browser flight-simulator prototype with world-anchored terrain, tree landmarks, and runway projection. It is intentionally independent of the other projects in the workspace.
+Standalone browser flight-simulator prototype with world-anchored terrain tiles, tree landmarks, cardinal runway markings, and runway projection. It is intentionally independent of the other projects in the workspace.
 
 ## Run it
 

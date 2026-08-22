@@ -143,7 +143,7 @@
     <div class="fs-layout">
       <section class="fs-cockpit" aria-label="Flight view">
         <div class="fs-canvas-wrap">
-          <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, terrain, trees, stationary runway, aircraft reticle, and training ring"></canvas>
+          <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, world terrain, trees, cardinal runway markings, aircraft reticle, and training ring"></canvas>
           <div class="fs-canvas-label">CHASE VIEW · TRAINING SECTOR 01</div>
           <div class="fs-reticle" aria-hidden="true"></div>
         </div>
@@ -201,6 +201,7 @@
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
+      const TERRAIN_CELL_SIZE = 360;
       const TERRAIN_FIELDS = Object.freeze([
         { left: -880, right: -90, startZ: -520, endZ: 760, fill: 'rgba(91, 119, 79, .34)', line: 'rgba(185, 201, 132, .22)' },
         { left: 90, right: 850, startZ: -520, endZ: 620, fill: 'rgba(118, 129, 76, .30)', line: 'rgba(220, 207, 129, .20)' },
@@ -379,7 +380,8 @@
           state.message = 'Stable approach — flare and touch down';
           state.score += 20;
         }
-    if (state.objective === 4 && state.altitude === 0 && state.speed >= 18 && state.speed < 75 && Math.abs(state.pitch) < 12 && Math.abs(state.roll) < 12) {
+        const groundContact = state.altitude === 0 && state.speed >= 18 && state.speed < 75;
+        if (state.objective === 4 && groundContact) {
           state.objective = 5;
           state.message = 'Training complete — smooth landing';
           state.score += 45;
@@ -407,7 +409,7 @@
         const phaseMessages = {
           1: 'Accelerate down the runway',
           2: 'Climb through the training ring',
-          3: state.speed < 40 && state.altitude > 20 ? 'Stall warning — add power and lower the nose' : (state.altitude > 650 ? 'Turn back and descend toward the runway' : 'Align with runway 09 and reduce power'),
+          3: state.speed < 40 && state.altitude > 20 ? 'Stall warning — add power and lower the nose' : (state.altitude > 650 ? 'Turn back and descend toward the runway' : 'Align with runway 36 and reduce power'),
           4: 'Flare and touch down gently',
           5: 'Training complete'
         };
@@ -432,6 +434,42 @@
       }
 
       function drawWorldTerrain(w, h, horizon) {
+        const centerCellX = Math.floor(state.worldX / TERRAIN_CELL_SIZE);
+        const centerCellZ = Math.floor(state.worldZ / TERRAIN_CELL_SIZE);
+        const terrainCells = [];
+        for (let cellX = centerCellX - 7; cellX <= centerCellX + 7; cellX += 1) {
+          for (let cellZ = centerCellZ - 7; cellZ <= centerCellZ + 9; cellZ += 1) {
+            const left = cellX * TERRAIN_CELL_SIZE;
+            const right = left + TERRAIN_CELL_SIZE;
+            const startZ = cellZ * TERRAIN_CELL_SIZE;
+            const endZ = startZ + TERRAIN_CELL_SIZE;
+            const points = [
+              projectWorldPoint(left, startZ, w, horizon),
+              projectWorldPoint(right, startZ, w, horizon),
+              projectWorldPoint(right, endZ, w, horizon),
+              projectWorldPoint(left, endZ, w, horizon)
+            ];
+            const center = projectWorldPoint((left + right) / 2, (startZ + endZ) / 2, w, horizon);
+            if (points.some(point => !point) || !center) continue;
+            terrainCells.push({ cellX, cellZ, points, forward: center.forward });
+          }
+        }
+        terrainCells.sort((a, b) => b.forward - a.forward);
+        terrainCells.forEach(({ cellX, cellZ, points }) => {
+          const tone = Math.abs((cellX * 374761393 + cellZ * 668265263) % 5);
+          ctx.fillStyle = [
+            'rgba(76, 104, 75, .26)',
+            'rgba(104, 119, 76, .24)',
+            'rgba(65, 100, 83, .24)',
+            'rgba(119, 122, 72, .22)',
+            'rgba(83, 111, 78, .25)'
+          ][tone];
+          ctx.beginPath();
+          points.forEach((point, index) => index === 0 ? ctx.moveTo(point.x, point.y) : ctx.lineTo(point.x, point.y));
+          ctx.closePath();
+          ctx.fill();
+        });
+
         TERRAIN_FIELDS.forEach(field => {
           const points = [
             projectWorldPoint(field.left, field.startZ, w, horizon),
@@ -465,6 +503,20 @@
           if (!near || !far) continue;
           ctx.beginPath(); ctx.moveTo(near.x, near.y); ctx.lineTo(far.x, far.y); ctx.stroke();
         }
+      }
+
+      function drawRunwayEndMark(z, number, cardinal, w, h, horizon) {
+        const point = projectWorldPoint(RUNWAY.x, z, w, horizon);
+        if (!point || point.y < 10 || point.y > h - 34) return;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(248, 249, 226, .92)';
+        ctx.font = '500 14px system-ui';
+        ctx.fillText(number, point.x, point.y + 5);
+        ctx.fillStyle = 'rgba(248, 249, 226, .72)';
+        ctx.font = '10px system-ui';
+        ctx.fillText(cardinal, point.x, point.y + 17);
+        ctx.restore();
       }
 
       function drawWorldTree(tree, w, h, horizon) {
@@ -543,10 +595,8 @@
         }
         ctx.stroke(); ctx.setLineDash([]);
 
-        const labelPoint = projectWorldPoint(RUNWAY.x, RUNWAY.startZ + 720, w, horizon);
-        if (labelPoint && labelPoint.y > 12 && labelPoint.y < h - 44) {
-          ctx.fillStyle = 'rgba(244, 246, 225, .82)'; ctx.font = '10px system-ui'; ctx.fillText('09', labelPoint.x + 7, labelPoint.y - 5);
-        }
+        drawRunwayEndMark(RUNWAY.startZ + 55, '18', 'S', w, h, horizon);
+        drawRunwayEndMark(RUNWAY.endZ - 85, '36', 'N', w, h, horizon);
       }
 
       function drawWorldBeacon(w, horizon) {
@@ -616,7 +666,7 @@
         drawAircraft(w, h);
 
         ctx.fillStyle = 'rgba(5, 18, 21, .58)'; ctx.fillRect(12, h - 30, w - 24, 18);
-        ctx.fillStyle = '#e8f6ef'; ctx.font = '11px system-ui'; ctx.fillText(`WIND 08 kt · RUNWAY 09 · FUEL ${Math.round(state.fuel)}%`, 22, h - 18);
+        ctx.fillStyle = '#e8f6ef'; ctx.font = '11px system-ui'; ctx.fillText(`WIND 08 kt · RUNWAY 18/36 · N/S · FUEL ${Math.round(state.fuel)}%`, 22, h - 18);
       }
 
       function frame(now) {

@@ -31,12 +31,18 @@ test('runway is projected from world-relative coordinates', () => {
   assert.match(simulator, /projectWorldPoint\(RUNWAY\.x - RUNWAY\.halfWidth, z/);
   assert.match(simulator, /projectWorldPoint\(RUNWAY\.x \+ RUNWAY\.halfWidth, z/);
   assert.match(simulator, /RUNWAY\.startZ \+ \(RUNWAY\.endZ - RUNWAY\.startZ\)/);
+  assert.match(simulator, /function drawRunwayEndMark\(/);
+  assert.match(simulator, /drawRunwayEndMark\(RUNWAY\.startZ \+ 55, '18', 'S'/);
+  assert.match(simulator, /drawRunwayEndMark\(RUNWAY\.endZ - 85, '36', 'N'/);
   assert.match(simulator, /state\.worldZ/);
   assert.doesNotMatch(simulator, /const startZ = state\.worldZ/);
   assert.doesNotMatch(simulator, /const endZ = state\.worldZ/);
 });
 
 test('terrain and landmarks use fixed world coordinates', () => {
+  assert.match(simulator, /const TERRAIN_CELL_SIZE = 360/);
+  assert.match(simulator, /Math\.floor\(state\.worldX \/ TERRAIN_CELL_SIZE\)/);
+  assert.match(simulator, /Math\.floor\(state\.worldZ \/ TERRAIN_CELL_SIZE\)/);
   assert.match(simulator, /const TERRAIN_FIELDS = Object\.freeze\(\[/);
   assert.match(simulator, /const TERRAIN_TREES = Object\.freeze\(\[/);
   assert.match(simulator, /function drawWorldTerrain\(/);
@@ -78,6 +84,7 @@ test('low-speed flight has a sink path instead of freezing altitude', () => {
 });
 
 test('normal touchdown completes the landing objective at ground contact', () => {
-  assert.match(simulator, /state\.objective === 4 && state\.altitude === 0 && state\.speed >= 18 && state\.speed < 75/);
-  assert.match(simulator, /Math\.abs\(state\.pitch\) < 12 && Math\.abs\(state\.roll\) < 12/);
+  assert.match(simulator, /const groundContact = state\.altitude === 0 && state\.speed >= 18 && state\.speed < 75/);
+  assert.match(simulator, /state\.objective === 4 && groundContact/);
+  assert.doesNotMatch(simulator, /state\.objective === 4 && state\.altitude === 0 && state\.speed >= 18 && state\.speed < 75 && Math\.abs/);
 });
