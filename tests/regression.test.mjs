@@ -72,6 +72,12 @@ test('open-world FPV view has a switchable drone camera and procedural landmarks
   assert.doesNotMatch(simulator, /fillText\('N\s+E\s+S\s+W'/);
   assert.match(simulator, /const altitudeDepth = Math\.max\(0, state\.altitude\)/);
   assert.match(simulator, /const runwayBuffer = RUNWAY\.halfWidth \+ 170/);
+  assert.match(simulator, /id="fs-controls-open"/);
+  assert.match(simulator, /id="fs-controls-menu"/);
+  assert.match(simulator, /Logitech Extreme 3D Pro/);
+  assert.match(simulator, /Microsoft SideWinder/);
+  assert.match(simulator, /function joystickProfileFor\(/);
+  assert.match(simulator, /function updateJoystickUi\(/);
 });
 
 test('PWA package has an install manifest and offline shell', async () => {
@@ -109,7 +115,8 @@ test('control mappings keep throttle, brake, and pause separate', () => {
   assert.match(simulator, /event\.code === 'KeyP'/);
   assert.doesNotMatch(simulator, /event\.code === 'Space'\) togglePause/);
   assert.match(simulator, /pad\.buttons\[2\]\?\.value/);
-  assert.match(simulator, /pad\.buttons\[9\]\?\.pressed/);
+  assert.match(simulator, /pad\.buttons\[profile\.buttons\.pause\]\?\.pressed/);
+  assert.match(simulator, /pause: 9/);
 });
 
 test('approach status text follows the active objective', () => {

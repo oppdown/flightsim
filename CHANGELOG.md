@@ -1,5 +1,12 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.006 — 2026-08-22
+
+- Removed all GitHub references and links from the public site.
+- Added a key-mapping menu with keyboard, mouse, Xbox-style, SideWinder, and Extreme 3D Pro profiles.
+- Added automatic joystick profile detection for Microsoft SideWinder and Logitech Extreme 3D Pro devices.
+- Rebuilt the PWA download as a self-contained browser package with its simulator, manifest, service worker, icon, and setup guide.
+
 ## v0.1.005 — 2026-08-22
 
 - Moved the public changelog to its own page and removed the embedded simulator from the landing page.

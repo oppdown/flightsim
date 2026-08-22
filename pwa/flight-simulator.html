@@ -17,6 +17,7 @@
     #flight-simulator * { box-sizing: border-box; }
 
     #flight-simulator .fs-shell {
+      position: relative;
       max-width: 1100px;
       margin: 0 auto;
       padding: 18px;
@@ -71,6 +72,16 @@
     #flight-simulator button:hover { background: rgba(255, 255, 255, .10); }
     #flight-simulator button:focus-visible { outline: 2px solid var(--fs-teal); outline-offset: 2px; }
     #flight-simulator .fs-primary { border-color: rgba(87, 212, 189, .5); background: rgba(48, 142, 130, .34); }
+    #flight-simulator .fs-controls-menu[hidden] { display: none; }
+    #flight-simulator .fs-controls-menu { position: absolute; z-index: 10; top: 74px; right: 18px; width: min(540px, calc(100% - 36px)); padding: 16px; border: 1px solid rgba(87, 212, 189, .45); border-radius: 12px; background: #102328; box-shadow: 0 20px 50px rgba(0,0,0,.42); }
+    #flight-simulator .fs-controls-menu h3 { margin: 0; }
+    #flight-simulator .fs-controls-menu-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    #flight-simulator .fs-controls-menu-copy { margin: 0 0 13px; color: var(--fs-muted); font-size: 12px; }
+    #flight-simulator .fs-mapping-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--fs-line); }
+    #flight-simulator .fs-mapping-group { padding: 11px; background: rgba(9, 20, 24, .86); }
+    #flight-simulator .fs-mapping-group h4 { margin: 0 0 8px; color: var(--fs-teal); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+    #flight-simulator .fs-mapping-group p { margin: 5px 0 0; color: var(--fs-muted); font-size: 12px; line-height: 1.45; }
+    #flight-simulator .fs-mapping-group strong { color: var(--fs-ink); font-weight: 500; }
 
     #flight-simulator .fs-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(250px, .72fr); gap: 12px; }
     #flight-simulator .fs-cockpit,
@@ -123,6 +134,9 @@
       #flight-simulator .fs-readouts { grid-template-columns: repeat(2, 1fr); }
       #flight-simulator .fs-readout { flex-direction: column; align-items: flex-start; }
     }
+    @media (max-width: 560px) {
+      #flight-simulator .fs-mapping-grid { grid-template-columns: 1fr; }
+    }
     @media (max-width: 420px) {
       #flight-simulator .fs-readouts { grid-template-columns: repeat(2, 1fr); }
     }
@@ -140,6 +154,30 @@
         <button id="fs-pause" type="button">Pause</button>
         <button id="fs-reset" type="button">Reset</button>
         <button id="fs-view-toggle" type="button">View: FPV</button>
+        <button id="fs-controls-open" type="button">Controls</button>
+      </div>
+    </div>
+
+    <div id="fs-controls-menu" class="fs-controls-menu" hidden>
+      <div class="fs-controls-menu-header">
+        <h3>Key mapping</h3>
+        <button id="fs-controls-close" type="button">Close</button>
+      </div>
+      <p class="fs-controls-menu-copy">Use the keyboard and mouse, or connect a joystick before starting the flight.</p>
+      <div class="fs-mapping-grid">
+        <div class="fs-mapping-group">
+          <h4>Keyboard + mouse</h4>
+          <p><strong>Pitch</strong> Arrow Up / Down · <strong>Roll</strong> A / D or Left / Right</p>
+          <p><strong>Yaw</strong> Q / E · <strong>Throttle</strong> W / S</p>
+          <p><strong>Brake</strong> Space · <strong>Pause</strong> P · <strong>View</strong> V</p>
+        </div>
+        <div class="fs-mapping-group">
+          <h4 id="fs-menu-joystick-profile">Joystick: not detected</h4>
+          <p id="fs-menu-joystick-attitude">Pitch / roll: connect a joystick</p>
+          <p id="fs-menu-joystick-throttle">Throttle: connect a joystick</p>
+          <p id="fs-menu-joystick-yaw">Yaw: connect a joystick</p>
+          <p id="fs-menu-joystick-actions">Actions: connect a joystick</p>
+        </div>
       </div>
     </div>
 
@@ -171,7 +209,7 @@
         </section>
 
         <section class="fs-panel">
-          <div class="fs-panel-heading"><h3>Mouse + keyboard</h3><span>Shared actions</span></div>
+          <div class="fs-panel-heading"><h3>Keyboard + mouse</h3><span>Shared actions</span></div>
           <div class="fs-control-row"><span>Pitch / roll</span><span class="fs-binding">Mouse position · arrows / A D</span></div>
           <div class="fs-control-row"><span>Throttle</span><span class="fs-binding"><kbd>W</kbd> <kbd>S</kbd></span></div>
           <div class="fs-control-row"><span>Yaw</span><span class="fs-binding"><kbd>Q</kbd> <kbd>E</kbd></span></div>
@@ -182,13 +220,12 @@
         </section>
 
         <section class="fs-panel">
-          <div class="fs-panel-heading"><h3>Xbox controller</h3><span id="fs-gamepad-state" class="fs-gamepad disconnected">Not detected</span></div>
-          <div class="fs-control-row"><span>Pitch / roll</span><span class="fs-binding">Left stick</span></div>
-          <div class="fs-control-row"><span>Throttle</span><span class="fs-binding">LT / RT</span></div>
-          <div class="fs-control-row"><span>Yaw</span><span class="fs-binding">LB / RB</span></div>
-          <div class="fs-control-row"><span>Brake</span><span class="fs-binding">X</span></div>
-          <div class="fs-control-row"><span>Pause</span><span class="fs-binding">Menu</span></div>
-          <div class="fs-control-row"><span>Reset</span><span class="fs-binding">B</span></div>
+          <div class="fs-panel-heading"><h3>Joystick</h3><span id="fs-gamepad-state" class="fs-gamepad disconnected">Not detected</span></div>
+          <div class="fs-control-row"><span>Profile</span><span id="fs-joystick-profile" class="fs-binding">No joystick detected</span></div>
+          <div class="fs-control-row"><span>Pitch / roll</span><span id="fs-joystick-attitude" class="fs-binding">Connect a joystick</span></div>
+          <div class="fs-control-row"><span>Throttle</span><span id="fs-joystick-throttle" class="fs-binding">Connect a joystick</span></div>
+          <div class="fs-control-row"><span>Yaw</span><span id="fs-joystick-yaw" class="fs-binding">Connect a joystick</span></div>
+          <div class="fs-control-row"><span>Actions</span><span id="fs-joystick-actions" class="fs-binding">Connect a joystick</span></div>
         </section>
       </aside>
     </div>
@@ -232,6 +269,48 @@
       let lastFrame = performance.now();
       let accumulator = 0;
       let gamepadActionLatch = { start: false, pause: false, reset: false };
+      const JOYSTICK_PROFILES = Object.freeze({
+        xinput: Object.freeze({
+          name: 'Xbox-style gamepad',
+          attitude: 'Left stick',
+          throttle: 'LT / RT',
+          yaw: 'LB / RB',
+          actions: 'A start · Menu pause · B reset · X brake',
+          type: 'xinput',
+          buttons: Object.freeze({ start: 0, reset: 1, brake: 2, pause: 9 })
+        }),
+        extreme3d: Object.freeze({
+          name: 'Logitech Extreme 3D Pro',
+          attitude: 'X roll · Y pitch',
+          throttle: 'Throttle slider · Axis 4',
+          yaw: 'Twist · Axis 3',
+          actions: 'Trigger brake · Button 2 start · Button 3 pause · Button 4 reset',
+          type: 'directinput',
+          axes: Object.freeze({ roll: 0, pitch: 1, yaw: 2, throttle: 3 }),
+          buttons: Object.freeze({ start: 1, reset: 3, brake: 0, pause: 2 })
+        }),
+        sidewinder: Object.freeze({
+          name: 'Microsoft SideWinder',
+          attitude: 'X roll · Y pitch',
+          throttle: 'Throttle slider · Axis 4',
+          yaw: 'Twist · Axis 3',
+          actions: 'Trigger brake · Button 2 start · Button 3 pause · Button 4 reset',
+          type: 'directinput',
+          axes: Object.freeze({ roll: 0, pitch: 1, yaw: 2, throttle: 3 }),
+          buttons: Object.freeze({ start: 1, reset: 3, brake: 0, pause: 2 })
+        }),
+        generic: Object.freeze({
+          name: 'Generic joystick',
+          attitude: 'X roll · Y pitch',
+          throttle: 'Throttle slider · Axis 4',
+          yaw: 'Twist · Axis 3',
+          actions: 'Trigger brake · Button 2 start · Button 3 pause · Button 4 reset',
+          type: 'directinput',
+          axes: Object.freeze({ roll: 0, pitch: 1, yaw: 2, throttle: 3 }),
+          buttons: Object.freeze({ start: 1, reset: 3, brake: 0, pause: 2 })
+        })
+      });
+      let activeJoystickProfile = JOYSTICK_PROFILES.generic;
       const FIXED_DT = 1 / 60;
 
       const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -266,25 +345,62 @@
         return { pitch: -y, roll: x };
       }
 
+      function joystickProfileFor(pad) {
+        const id = (pad?.id || '').toLowerCase();
+        if (/extreme\s*3d|logitech/.test(id)) return JOYSTICK_PROFILES.extreme3d;
+        if (/sidewinder|microsoft/.test(id)) return JOYSTICK_PROFILES.sidewinder;
+        if (pad?.mapping === 'standard' || /xbox|x-input|xinput/.test(id)) return JOYSTICK_PROFILES.xinput;
+        return JOYSTICK_PROFILES.generic;
+      }
+
+      function updateJoystickUi(pad, profile) {
+        const status = el('#fs-gamepad-state');
+        const connected = Boolean(pad);
+        status.textContent = connected ? 'Connected' : 'Not detected';
+        status.classList.toggle('disconnected', !connected);
+        if (connected) status.setAttribute('aria-label', pad.id || profile.name);
+        el('#fs-joystick-profile').textContent = connected ? profile.name : 'No joystick detected';
+        el('#fs-joystick-attitude').textContent = connected ? profile.attitude : 'Connect a joystick';
+        el('#fs-joystick-throttle').textContent = connected ? profile.throttle : 'Connect a joystick';
+        el('#fs-joystick-yaw').textContent = connected ? profile.yaw : 'Connect a joystick';
+        el('#fs-joystick-actions').textContent = connected ? profile.actions : 'Connect a joystick';
+        el('#fs-menu-joystick-profile').textContent = connected ? `Joystick: ${profile.name}` : 'Joystick: not detected';
+        el('#fs-menu-joystick-attitude').textContent = connected ? `Pitch / roll: ${profile.attitude}` : 'Pitch / roll: connect a joystick';
+        el('#fs-menu-joystick-throttle').textContent = connected ? `Throttle: ${profile.throttle}` : 'Throttle: connect a joystick';
+        el('#fs-menu-joystick-yaw').textContent = connected ? `Yaw: ${profile.yaw}` : 'Yaw: connect a joystick';
+        el('#fs-menu-joystick-actions').textContent = connected ? `Actions: ${profile.actions}` : 'Actions: connect a joystick';
+      }
+
       function gamepadAxes() {
         const pads = navigator.getGamepads ? navigator.getGamepads() : [];
         const pad = Array.from(pads).find(Boolean);
         if (!pad) return { pitch: 0, roll: 0, yaw: 0, throttle: 0, brake: 0, pad: null };
         const deadzone = value => Math.abs(value) < .12 ? 0 : value;
-        const leftX = deadzone(pad.axes[0] || 0);
-        const leftY = deadzone(pad.axes[1] || 0);
-        const lt = pad.buttons[6]?.value || 0;
-        const rt = pad.buttons[7]?.value || 0;
-        const yaw = (pad.buttons[5]?.value || 0) - (pad.buttons[4]?.value || 0);
-        return { pitch: -leftY, roll: leftX, yaw, throttle: rt - lt, brake: pad.buttons[2]?.value || 0, pad };
+        const profile = joystickProfileFor(pad);
+        activeJoystickProfile = profile;
+        if (profile.type === 'xinput') {
+          const leftX = deadzone(pad.axes[0] || 0);
+          const leftY = deadzone(pad.axes[1] || 0);
+          const lt = pad.buttons[6]?.value || 0;
+          const rt = pad.buttons[7]?.value || 0;
+          const yaw = (pad.buttons[5]?.value || 0) - (pad.buttons[4]?.value || 0);
+          return { pitch: -leftY, roll: leftX, yaw, throttle: rt - lt, brake: pad.buttons[2]?.value || 0, pad, profile };
+        }
+        const roll = deadzone(pad.axes[profile.axes.roll] || 0);
+        const pitch = -deadzone(pad.axes[profile.axes.pitch] || 0);
+        const yaw = deadzone(pad.axes[profile.axes.yaw] || 0);
+        const rawThrottle = pad.axes[profile.axes.throttle];
+        const targetThrottle = rawThrottle === undefined ? state.throttle : clamp((1 - rawThrottle) / 2, 0, 1);
+        const throttle = clamp((targetThrottle - state.throttle) * 3.5, -1, 1);
+        return { pitch, roll, yaw, throttle, brake: pad.buttons[profile.buttons.brake]?.value || 0, pad, profile };
       }
 
       function handleGamepadActions() {
-        const { pad } = gamepadAxes();
+        const { pad, profile = JOYSTICK_PROFILES.generic } = gamepadAxes();
         const next = pad ? {
-          start: Boolean(pad.buttons[0]?.pressed),
-          pause: Boolean(pad.buttons[9]?.pressed),
-          reset: Boolean(pad.buttons[1]?.pressed)
+          start: Boolean(pad.buttons[profile.buttons.start]?.pressed),
+          pause: Boolean(pad.buttons[profile.buttons.pause]?.pressed),
+          reset: Boolean(pad.buttons[profile.buttons.reset]?.pressed)
         } : { start: false, pause: false, reset: false };
         if (next.start && !gamepadActionLatch.start) startFlight();
         if (next.pause && !gamepadActionLatch.pause) togglePause();
@@ -293,16 +409,14 @@
       }
 
       function updateGamepadLabel() {
-        const { pad } = gamepadAxes();
-        const label = el('#fs-gamepad-state');
-        if (pad) {
-          label.textContent = 'Connected';
-          label.classList.remove('disconnected');
-          label.setAttribute('aria-label', pad.id || 'Xbox controller connected');
-        } else {
-          label.textContent = 'Not detected';
-          label.classList.add('disconnected');
-        }
+        const { pad, profile = activeJoystickProfile } = gamepadAxes();
+        activeJoystickProfile = profile;
+        updateJoystickUi(pad, profile);
+      }
+
+      function toggleControlsMenu() {
+        const menu = el('#fs-controls-menu');
+        menu.hidden = !menu.hidden;
       }
 
       function resetFlight() {
@@ -798,6 +912,8 @@
       root.querySelector('#fs-pause').addEventListener('click', togglePause);
       root.querySelector('#fs-reset').addEventListener('click', resetFlight);
       root.querySelector('#fs-view-toggle').addEventListener('click', toggleView);
+      root.querySelector('#fs-controls-open').addEventListener('click', toggleControlsMenu);
+      root.querySelector('#fs-controls-close').addEventListener('click', toggleControlsMenu);
       window.addEventListener('resize', resize);
       window.addEventListener('gamepadconnected', updateGamepadLabel);
       window.addEventListener('gamepaddisconnected', updateGamepadLabel);
@@ -806,6 +922,7 @@
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
         if (event.code === 'KeyP' && !event.repeat) togglePause();
         if (event.code === 'KeyV' && !event.repeat) toggleView();
+        if (event.code === 'Escape') el('#fs-controls-menu').hidden = true;
         if (event.code === 'Enter') startFlight();
       });
       window.addEventListener('keyup', event => keys.delete(event.code));

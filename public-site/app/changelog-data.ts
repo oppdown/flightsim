@@ -7,6 +7,17 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.006",
+    date: "August 22, 2026",
+    title: "Joystick profiles and clean public site",
+    details: [
+      "Removed repository references and links from the public site.",
+      "Added a key-mapping menu with keyboard, mouse, Xbox-style, SideWinder, and Extreme 3D Pro profiles.",
+      "Added automatic joystick profile detection and axis/button mappings for SideWinder and Extreme 3D Pro devices.",
+      "Rebuilt the downloadable PWA package with every local asset needed to run the browser app.",
+    ],
+  },
+  {
     version: "v0.1.005",
     date: "August 22, 2026",
     title: "Download-first PWA release",

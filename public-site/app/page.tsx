@@ -9,15 +9,12 @@ export default function Home() {
         <nav aria-label="Primary navigation">
           <a href="/download">Download</a>
           <a href="/changelog">Changelog</a>
-          <a className="nav-cta" href="https://github.com/oppdown/flightsim" target="_blank" rel="noreferrer">
-            GitHub <span aria-hidden="true">↗</span>
-          </a>
         </nav>
       </header>
 
       <section id="top" className="hero-grid" aria-labelledby="page-title">
         <div className="hero-copy">
-          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.005</p>
+          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.006</p>
           <h1 id="page-title">Learn the runway by flying it.</h1>
           <p className="hero-lede">
             A focused, deterministic open world for low-altitude flight, FPV exploration,

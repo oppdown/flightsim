@@ -11,9 +11,6 @@ export default function ChangelogPage() {
         <nav aria-label="Primary navigation">
           <a href="/download">Download</a>
           <a href="/changelog" aria-current="page">Changelog</a>
-          <a className="nav-cta" href="https://github.com/oppdown/flightsim" target="_blank" rel="noreferrer">
-            GitHub <span aria-hidden="true">↗</span>
-          </a>
         </nav>
       </header>
 
