@@ -64,11 +64,26 @@ test('open-world FPV view has a switchable drone camera and procedural landmarks
   assert.match(simulator, /function getWorldTrees\(/);
   assert.match(simulator, /event\.code === 'KeyV'/);
   assert.match(simulator, /OPEN WORLD/);
+  const hudStart = simulator.indexOf('function drawFpvHud(');
+  const hudEnd = simulator.indexOf('function draw()', hudStart);
+  assert.doesNotMatch(simulator.slice(hudStart, hudEnd), /ARMED|OPEN WORLD/);
   assert.match(simulator, /pitchInput \* 180/);
   assert.match(simulator, /rollInput \* 360/);
   assert.doesNotMatch(simulator, /fillText\('N\s+E\s+S\s+W'/);
   assert.match(simulator, /const altitudeDepth = Math\.max\(0, state\.altitude\)/);
   assert.match(simulator, /const runwayBuffer = RUNWAY\.halfWidth \+ 170/);
+});
+
+test('PWA package has an install manifest and offline shell', async () => {
+  const pwaRoot = new URL('./pwa/', root);
+  const manifest = await readFile(new URL('manifest.webmanifest', pwaRoot), 'utf8');
+  const shell = await readFile(new URL('index.html', pwaRoot), 'utf8');
+  const serviceWorker = await readFile(new URL('sw.js', pwaRoot), 'utf8');
+  assert.match(manifest, /"display": "standalone"/);
+  assert.match(manifest, /"start_url": "\.\/index\.html"/);
+  assert.match(shell, /rel="manifest"/);
+  assert.match(shell, /serviceWorker\.register\('\.\/sw\.js'\)/);
+  assert.match(serviceWorker, /caches\.open\(CACHE\)/);
 });
 
 test('throttle feedback sits below the primary flight readouts', () => {

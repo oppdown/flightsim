@@ -1,38 +1,3 @@
-const changes = [
-  {
-    version: "v0.1.004",
-    date: "August 22, 2026",
-    title: "Open-world flight clarity",
-    details: [
-      "Added a low-altitude first-person FPV view with a drone frame and telemetry HUD.",
-      "Added a V key / button toggle between FPV and chase views.",
-      "Opened the full pitch and roll range for aerobatics such as loops and barrel rolls.",
-      "Scaled distant terrain items with altitude, cleared trees from the runway approach, and kept the ground readable.",
-      "Moved throttle feedback below the flight readouts and simplified the FPV compass.",
-    ],
-  },
-  {
-    version: "0.2.0",
-    date: "August 22, 2026",
-    title: "World terrain pass",
-    details: [
-      "Added world-anchored terrain tiles and tree landmarks.",
-      "Kept the runway stationary on the terrain through turns.",
-      "Added runway end markings 18/S and 36/N.",
-    ],
-  },
-  {
-    version: "0.1.0",
-    date: "August 22, 2026",
-    title: "Initial simulator",
-    details: [
-      "Added deterministic takeoff and landing training.",
-      "Mapped mouse, keyboard, and Xbox-style controls.",
-      "Added the first regression suite for the flight loop.",
-    ],
-  },
-];
-
 export default function Home() {
   return (
     <main className="site-shell">
@@ -42,8 +7,8 @@ export default function Home() {
           <span>Flight Lab</span>
         </a>
         <nav aria-label="Primary navigation">
-          <a href="#simulator">Simulator</a>
-          <a href="#changelog">Changelog</a>
+          <a href="/download">Download</a>
+          <a href="/changelog">Changelog</a>
           <a className="nav-cta" href="https://github.com/oppdown/flightsim" target="_blank" rel="noreferrer">
             GitHub <span aria-hidden="true">↗</span>
           </a>
@@ -52,15 +17,15 @@ export default function Home() {
 
       <section id="top" className="hero-grid" aria-labelledby="page-title">
         <div className="hero-copy">
-          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.004</p>
+          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.005</p>
           <h1 id="page-title">Learn the runway by flying it.</h1>
           <p className="hero-lede">
             A focused, deterministic open world for low-altitude flight, FPV exploration,
             turns, approach, and touchdown with a mouse, keyboard, or Xbox controller.
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href="#simulator">Fly the training sector <span aria-hidden="true">↓</span></a>
-            <a className="secondary-action" href="#changelog">See what changed</a>
+            <a className="primary-action" href="/download">Download the PWA <span aria-hidden="true">↓</span></a>
+            <a className="secondary-action" href="/changelog">Read the changelog</a>
           </div>
         </div>
         <aside className="hero-note" aria-label="Current build summary">
@@ -70,52 +35,8 @@ export default function Home() {
         </aside>
       </section>
 
-      <section id="simulator" className="simulator-section" aria-labelledby="simulator-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">TRAINING SECTOR 01</p>
-            <h2 id="simulator-title">Takeoff &amp; landing trainer</h2>
-          </div>
-          <p className="section-side-note">Start flight · Move inside the view</p>
-        </div>
-        <div className="simulator-frame">
-          <iframe
-            src="/flight-simulator.html"
-            title="Flight Lab takeoff and landing simulator"
-            loading="eager"
-          />
-        </div>
-      </section>
-
-      <section id="changelog" className="changelog-section" aria-labelledby="changelog-title">
-        <div className="section-heading changelog-heading">
-          <div>
-            <p className="eyebrow">ITERATION LOG</p>
-            <h2 id="changelog-title">Changelog</h2>
-          </div>
-          <p className="section-side-note">Every build is tested before it ships.</p>
-        </div>
-        <div className="changelog-list">
-          {changes.map((change) => (
-            <article className="change-entry" key={change.version}>
-              <div className="change-meta">
-                <span className="change-version">{change.version}</span>
-                <span>{change.date}</span>
-              </div>
-              <div className="change-body">
-                <h3>{change.title}</h3>
-                <ul>
-                  {change.details.map((detail) => <li key={detail}>{detail}</li>)}
-                </ul>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <footer className="site-footer">
         <span>Flight Lab · A standalone oppdown project</span>
-        <a href="https://github.com/oppdown/flightsim" target="_blank" rel="noreferrer">View source on GitHub ↗</a>
       </footer>
     </main>
   );

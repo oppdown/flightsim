@@ -1,0 +1,14 @@
+{
+  "name": "Flight Lab Simulator",
+  "short_name": "Flight Lab",
+  "description": "A deterministic open-world flight simulator for tester builds.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b171c",
+  "theme_color": "#0b171c",
+  "orientation": "landscape",
+  "icons": [
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

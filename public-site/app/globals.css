@@ -43,6 +43,17 @@ h1 { max-width: 760px; margin-bottom: 24px; font-size: clamp(48px, 8vw, 96px); l
 .note-rule { height: 1px; margin: 18px 0; background: var(--line); }
 .status-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 14px var(--teal); }
 .simulator-section, .changelog-section { padding: 30px 0 86px; }
+.page-shell { min-height: 100vh; }
+.page-hero { max-width: 760px; padding: 84px 0 58px; }
+.page-hero h1 { margin-bottom: 22px; }
+.page-lede { max-width: 620px; color: var(--muted); font-size: 18px; line-height: 1.55; }
+.download-card { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 28px; border: 1px solid rgba(87, 212, 189, .35); border-radius: 18px; background: linear-gradient(135deg, rgba(87, 212, 189, .12), rgba(255,255,255,.025)); }
+.download-card h2, .download-steps h2 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.05em; font-weight: 500; }
+.download-card p:not(.eyebrow) { max-width: 620px; margin: 0; color: var(--muted); line-height: 1.55; }
+.download-action { flex: 0 0 auto; white-space: nowrap; }
+.download-steps { max-width: 680px; padding: 72px 0 84px; }
+.download-steps ol { display: grid; gap: 12px; margin: 0; padding-left: 21px; color: var(--muted); line-height: 1.55; }
+.page-note { margin: 24px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
 .section-heading h2 { margin-bottom: 0; font-size: clamp(28px, 4vw, 44px); letter-spacing: -.05em; font-weight: 500; }
 .section-side-note { margin-bottom: 3px; color: var(--muted); font-size: 12px; }
@@ -66,8 +77,8 @@ h1 { max-width: 760px; margin-bottom: 24px; font-size: clamp(48px, 8vw, 96px); l
   .hero-grid { grid-template-columns: 1fr; padding: 62px 0 58px; }
   h1 { font-size: clamp(48px, 16vw, 74px); }
   .hero-lede { font-size: 16px; }
-  .simulator-frame { margin-right: -12px; margin-left: -12px; border-right: 0; border-left: 0; border-radius: 0; }
-  .simulator-frame iframe { height: 1040px; }
+  .download-card { align-items: flex-start; flex-direction: column; }
+  .download-action { white-space: normal; }
   .section-heading { align-items: flex-start; flex-direction: column; }
   .change-entry { grid-template-columns: 1fr; gap: 12px; }
   .site-footer { align-items: flex-start; flex-direction: column; }
