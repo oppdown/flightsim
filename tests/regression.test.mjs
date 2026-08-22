@@ -84,7 +84,9 @@ test('low-speed flight has a sink path instead of freezing altitude', () => {
 });
 
 test('normal touchdown completes the landing objective at ground contact', () => {
-  assert.match(simulator, /const groundContact = state\.altitude === 0 && state\.speed >= 18 && state\.speed < 75/);
+  assert.match(simulator, /const groundContact = state\.altitude === 0/);
+  assert.match(simulator, /const safeLanding = state\.speed >= 18 && state\.speed < 75 && Math\.abs\(state\.pitch\) < 12 && Math\.abs\(state\.roll\) < 12/);
   assert.match(simulator, /state\.objective === 4 && groundContact/);
-  assert.doesNotMatch(simulator, /state\.objective === 4 && state\.altitude === 0 && state\.speed >= 18 && state\.speed < 75 && Math\.abs/);
+  assert.match(simulator, /if \(safeLanding\)/);
+  assert.match(simulator, /Landing recorded — safe touchdown limits missed/);
 });
