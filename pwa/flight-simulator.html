@@ -84,6 +84,33 @@
     #flight-simulator .fs-axis-grid label { display: grid; gap: 4px; color: var(--fs-ink); font-size: 12px; }
     #flight-simulator .fs-axis-grid select { width: 100%; padding: 6px 7px; border: 1px solid var(--fs-line); border-radius: 6px; color: var(--fs-ink); background: #162d32; font: inherit; }
     #flight-simulator .fs-axis-grid select:focus-visible { outline: 2px solid var(--fs-teal); outline-offset: 2px; }
+    #flight-simulator .fs-instrument-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 8px; }
+    #flight-simulator .fs-instrument-card { min-width: 0; padding: 9px; border: 1px solid rgba(191, 222, 214, .12); border-radius: 8px; background: rgba(9, 20, 24, .62); }
+    #flight-simulator .fs-instrument-card h4 { margin: 0; color: var(--fs-teal); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    #flight-simulator .fs-instrument-heading { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 7px; color: var(--fs-muted); font-size: 11px; }
+    #flight-simulator .fs-instrument-value { color: var(--fs-ink); font-variant-numeric: tabular-nums; font-weight: 500; }
+    #flight-simulator .fs-hsi-dial { position: relative; width: min(100%, 122px); aspect-ratio: 1; margin: 2px auto 6px; overflow: hidden; border: 2px solid rgba(225, 240, 234, .55); border-radius: 50%; background: radial-gradient(circle, rgba(61, 113, 116, .50) 0 48%, rgba(16, 38, 43, .98) 49% 100%); }
+    #flight-simulator .fs-hsi-card { position: absolute; inset: 10%; transform-origin: center; transition: transform .1s linear; }
+    #flight-simulator .fs-hsi-card::before { content: ''; position: absolute; left: 50%; top: 3%; bottom: 3%; width: 1px; background: rgba(225, 240, 234, .32); transform: translateX(-50%); }
+    #flight-simulator .fs-hsi-card::after { content: ''; position: absolute; top: 50%; left: 3%; right: 3%; height: 1px; background: rgba(225, 240, 234, .26); transform: translateY(-50%); }
+    #flight-simulator .fs-hsi-card span { position: absolute; color: rgba(238, 247, 242, .82); font-size: 9px; font-weight: 600; }
+    #flight-simulator .fs-hsi-card span:nth-child(1) { top: -2px; left: 50%; transform: translateX(-50%); }
+    #flight-simulator .fs-hsi-card span:nth-child(2) { top: 50%; right: -2px; transform: translateY(-50%); }
+    #flight-simulator .fs-hsi-card span:nth-child(3) { bottom: -2px; left: 50%; transform: translateX(-50%); }
+    #flight-simulator .fs-hsi-card span:nth-child(4) { top: 50%; left: -2px; transform: translateY(-50%); }
+    #flight-simulator .fs-hsi-aircraft { position: absolute; left: 50%; top: 50%; width: 7px; height: 32px; border: 1px solid var(--fs-amber); border-radius: 5px 5px 2px 2px; background: var(--fs-amber); box-shadow: 0 0 0 2px rgba(242, 195, 107, .16); transform: translate(-50%, -50%) rotate(0deg); transform-origin: center; transition: transform .1s linear; }
+    #flight-simulator .fs-hsi-aircraft::before { content: ''; position: absolute; left: 50%; top: 10px; width: 34px; height: 4px; border: 1px solid var(--fs-amber); background: var(--fs-amber); transform: translateX(-50%); }
+    #flight-simulator .fs-instrument-caption { margin: 0; color: var(--fs-muted); font-size: 10px; text-align: center; }
+    #flight-simulator .fs-instrument-stack { display: grid; gap: 7px; align-content: start; }
+    #flight-simulator .fs-instrument-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(191, 222, 214, .10); }
+    #flight-simulator .fs-instrument-row:last-child { padding-bottom: 0; border-bottom: 0; }
+    #flight-simulator .fs-instrument-row span { color: var(--fs-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    #flight-simulator .fs-instrument-row strong { color: var(--fs-ink); font-size: 13px; font-weight: 500; }
+    #flight-simulator .fs-system-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    #flight-simulator .fs-system-switch { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-width: 0; padding: 7px 8px; border: 1px solid rgba(191, 222, 214, .14); border-radius: 7px; color: var(--fs-muted); background: rgba(255, 255, 255, .035); font-size: 11px; }
+    #flight-simulator .fs-system-switch[aria-pressed="true"] { border-color: rgba(87, 212, 189, .55); color: var(--fs-ink); background: rgba(48, 142, 130, .28); }
+    #flight-simulator .fs-system-switch small { color: var(--fs-teal); font-size: 10px; }
+    #flight-simulator .fs-control-hint { margin-top: 9px; color: var(--fs-muted); font-size: 11px; }
     #flight-simulator .fs-mapping-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--fs-line); }
     #flight-simulator .fs-mapping-group { padding: 11px; background: rgba(9, 20, 24, .86); }
     #flight-simulator .fs-mapping-group h4 { margin: 0 0 8px; color: var(--fs-teal); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
@@ -143,6 +170,7 @@
     }
     @media (max-width: 560px) {
       #flight-simulator .fs-mapping-grid { grid-template-columns: 1fr; }
+      #flight-simulator .fs-instrument-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 420px) {
       #flight-simulator .fs-readouts { grid-template-columns: repeat(2, 1fr); }
@@ -239,11 +267,44 @@
           <div class="fs-status-row"><span id="fs-score">Score 0</span><span id="fs-message" class="fs-status" aria-live="polite">Press Start flight</span></div>
         </section>
 
+        <section class="fs-panel" aria-label="Flight instruments">
+          <div class="fs-panel-heading"><h3>Flight instruments</h3><span>Live</span></div>
+          <div class="fs-instrument-grid">
+            <div class="fs-instrument-card">
+              <div class="fs-instrument-heading"><h4>HSI</h4><span id="fs-hsi-heading" class="fs-instrument-value">000°</span></div>
+              <div class="fs-hsi-dial" role="img" aria-label="Horizontal situation indicator showing heading and bank">
+                <div id="fs-hsi-card" class="fs-hsi-card" aria-hidden="true"><span>N</span><span>E</span><span>S</span><span>W</span></div>
+                <div id="fs-hsi-aircraft" class="fs-hsi-aircraft" aria-hidden="true"></div>
+              </div>
+              <p id="fs-hsi-attitude" class="fs-instrument-caption">Bank 0° · Pitch 0°</p>
+            </div>
+            <div class="fs-instrument-card fs-instrument-stack">
+              <div class="fs-instrument-row"><span>VSI</span><strong><span id="fs-vsi">0</span> ft/s</strong></div>
+              <div class="fs-instrument-row"><span>Altitude</span><strong><span id="fs-altitude-indicator">0</span> ft</strong></div>
+              <div class="fs-instrument-row"><span>Airspeed</span><strong><span id="fs-airspeed-indicator">0</span> mph</strong></div>
+              <div class="fs-instrument-row"><span>Flaps</span><strong id="fs-flaps-indicator">UP</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="fs-panel" aria-label="Aircraft systems">
+          <div class="fs-panel-heading"><h3>Aircraft systems</h3><span>Toggle</span></div>
+          <div class="fs-system-grid">
+            <button id="fs-flaps-10" class="fs-system-switch" type="button" aria-pressed="false">Flaps 10° <small>1</small></button>
+            <button id="fs-flaps-30" class="fs-system-switch" type="button" aria-pressed="false">Flaps 30° <small>2</small></button>
+            <button id="fs-nav-lights" class="fs-system-switch" type="button" aria-pressed="false">Navigation lights <small>N</small></button>
+            <button id="fs-nose-light" class="fs-system-switch" type="button" aria-pressed="false">Nosewheel light <small>L</small></button>
+          </div>
+          <p class="fs-control-hint">Flaps add lift and drag for approach. Navigation lights: red left wing, green right wing, white tail.</p>
+        </section>
+
         <section class="fs-panel">
           <div class="fs-panel-heading"><h3>Keyboard + mouse</h3><span>Shared actions</span></div>
           <div class="fs-control-row"><span>Pitch / roll</span><span class="fs-binding">Mouse position · arrows / A D</span></div>
           <div class="fs-control-row"><span>Throttle</span><span class="fs-binding"><kbd>W</kbd> <kbd>S</kbd></span></div>
           <div class="fs-control-row"><span>Yaw</span><span class="fs-binding"><kbd>Q</kbd> <kbd>E</kbd></span></div>
+          <div class="fs-control-row"><span>Flaps</span><span class="fs-binding"><kbd>1</kbd> 10° · <kbd>2</kbd> 30°</span></div>
+          <div class="fs-control-row"><span>Lights</span><span class="fs-binding"><kbd>N</kbd> nav · <kbd>L</kbd> nose</span></div>
           <div class="fs-control-row"><span>Brake</span><span class="fs-binding"><kbd>Space</kbd></span></div>
           <div class="fs-control-row"><span>Pause</span><span class="fs-binding"><kbd>P</kbd></span></div>
           <div class="fs-control-row"><span>View</span><span class="fs-binding"><kbd>V</kbd> FPV / chase</span></div>
@@ -272,7 +333,7 @@
       const keys = new Set();
       const pointer = { active: false, x: 0, y: 0 };
       const view = { width: 0, height: 0, dpr: 1 };
-      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
+      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
@@ -300,8 +361,8 @@
       let lastFrame = performance.now();
       let accumulator = 0;
       let gamepadActionLatch = { start: false, pause: false, reset: false };
-      const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions';
-      const controlInversions = { pitch: false, roll: false, yaw: false };
+      const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions-v2';
+      const controlInversions = { pitch: true, roll: false, yaw: false };
       const JOYSTICK_PROFILES = Object.freeze({
         xinput: Object.freeze({
           name: 'Xbox-style gamepad',
@@ -358,7 +419,9 @@
       function loadControlInversions() {
         try {
           const saved = JSON.parse(window.localStorage.getItem(CONTROL_INVERSION_STORAGE_KEY) || '{}');
-          for (const axis of Object.keys(controlInversions)) controlInversions[axis] = saved[axis] === true;
+          for (const axis of Object.keys(controlInversions)) {
+            if (Object.prototype.hasOwnProperty.call(saved, axis)) controlInversions[axis] = saved[axis] === true;
+          }
         } catch {
           for (const axis of Object.keys(controlInversions)) controlInversions[axis] = false;
         }
@@ -375,6 +438,21 @@
       function setControlInversion(axis, value) {
         controlInversions[axis] = value === 'inverted';
         saveControlInversions();
+      }
+
+      function toggleFlaps(angle) {
+        state.flaps = state.flaps === angle ? 0 : angle;
+        updateUi();
+      }
+
+      function toggleNavLights() {
+        state.navLights = !state.navLights;
+        updateUi();
+      }
+
+      function toggleNosewheelLight() {
+        state.nosewheelLight = !state.nosewheelLight;
+        updateUi();
       }
 
       function resize() {
@@ -527,11 +605,13 @@
         const coordinatedTurnRate = Math.sin(rad(state.roll)) * (4 + state.speed * .23);
         state.heading = (state.heading + (yawInput * 22 + coordinatedTurnRate) * dt + 360) % 360;
 
-        const drag = 3.2 + state.speed * .075 + Math.abs(state.pitch) * .08 + brakeInput * 18;
+        const flapDrag = state.flaps === 30 ? 7 : state.flaps === 10 ? 2.5 : 0;
+        const flapLift = state.flaps === 30 ? .16 : state.flaps === 10 ? .08 : 0;
+        const drag = 3.2 + state.speed * .075 + Math.abs(state.pitch) * .08 + flapDrag + brakeInput * 18;
         const acceleration = state.throttle * 27 - drag;
         state.speed = clamp(state.speed + acceleration * dt, 0, 210);
         const airborne = state.altitude > 0 || state.speed > 60;
-        const lift = Math.max(0, state.speed - 54) * (state.pitch > 1 ? .54 : 0);
+        const lift = Math.max(0, state.speed - 54) * (state.pitch > 1 ? .54 + flapLift : 0);
         const stallSink = Math.max(0, 52 - state.speed) * .28;
         const lowSpeedGravity = state.speed < 18 ? 9 : 0;
         const climbRate = airborne ? Math.sin(rad(state.pitch)) * state.speed * .55 + lift - stallSink - lowSpeedGravity : 0;
@@ -590,6 +670,18 @@
         el('#fs-attitude').textContent = `${Math.round(state.pitch)} / ${Math.round(state.roll)}`;
         el('#fs-throttle').textContent = Math.round(state.throttle * 100);
         el('#fs-throttle-meter').style.width = `${state.throttle * 100}%`;
+        el('#fs-hsi-heading').textContent = `${String(Math.round(state.heading)).padStart(3, '0')}°`;
+        el('#fs-hsi-card').style.transform = `rotate(${-state.heading}deg)`;
+        el('#fs-hsi-aircraft').style.transform = `translate(-50%, -50%) rotate(${state.roll}deg)`;
+        el('#fs-hsi-attitude').textContent = `Bank ${Math.round(state.roll)}° · Pitch ${Math.round(state.pitch)}°`;
+        el('#fs-vsi').textContent = Math.round(state.verticalSpeed);
+        el('#fs-altitude-indicator').textContent = Math.round(state.altitude);
+        el('#fs-airspeed-indicator').textContent = Math.round(state.speed);
+        el('#fs-flaps-indicator').textContent = state.flaps ? `${state.flaps}°` : 'UP';
+        el('#fs-flaps-10').setAttribute('aria-pressed', String(state.flaps === 10));
+        el('#fs-flaps-30').setAttribute('aria-pressed', String(state.flaps === 30));
+        el('#fs-nav-lights').setAttribute('aria-pressed', String(state.navLights));
+        el('#fs-nose-light').setAttribute('aria-pressed', String(state.nosewheelLight));
         el('#fs-score').textContent = `Score ${Math.max(0, Math.round(state.score))}`;
         const objectives = {
           1: ['Objective 1 · Take off', 'Build speed above 55 mph, then raise the nose.'],
@@ -841,7 +933,6 @@
       function drawAircraft(w, h) {
         ctx.save();
         ctx.translate(w / 2, h * .73);
-        ctx.rotate(rad(state.roll) * .62);
         const scale = clamp(w / 640, .72, 1.18);
         ctx.scale(scale, scale);
         ctx.fillStyle = 'rgba(5, 14, 18, .28)';
@@ -853,7 +944,16 @@
         ctx.lineTo(-20, 52); ctx.lineTo(-7, 17); ctx.lineTo(-78, 22); ctx.lineTo(-78, 12); ctx.lineTo(-8, -12); ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#56d4be'; ctx.strokeStyle = '#a8f0dc';
         ctx.beginPath(); ctx.ellipse(0, -31, 9, 18, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#f2c36b'; ctx.beginPath(); ctx.arc(-58, 18, 5, 0, Math.PI * 2); ctx.arc(58, 18, 5, 0, Math.PI * 2); ctx.fill();
+        if (state.navLights) {
+          ctx.fillStyle = '#e95c61'; ctx.beginPath(); ctx.arc(-58, 18, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#5be08b'; ctx.beginPath(); ctx.arc(58, 18, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#f7fff8'; ctx.beginPath(); ctx.arc(0, 48, 4, 0, Math.PI * 2); ctx.fill();
+        }
+        if (state.nosewheelLight) {
+          ctx.fillStyle = '#fff3b0'; ctx.shadowColor = '#fff3b0'; ctx.shadowBlur = 12;
+          ctx.beginPath(); ctx.arc(0, -55, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+        }
         ctx.restore();
       }
 
@@ -881,6 +981,15 @@
         ctx.moveTo(w * .5, h * .76); ctx.lineTo(w * .57, h); ctx.lineTo(w * .43, h); ctx.closePath(); ctx.fill();
         ctx.strokeStyle = 'rgba(225, 240, 234, .65)';
         ctx.beginPath(); ctx.moveTo(w * .5, h * .76); ctx.lineTo(w * .57, h); ctx.moveTo(w * .5, h * .76); ctx.lineTo(w * .43, h); ctx.stroke();
+        if (state.navLights) {
+          ctx.fillStyle = '#e95c61'; ctx.beginPath(); ctx.arc(leftGuard.x, leftGuard.y, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#5be08b'; ctx.beginPath(); ctx.arc(rightGuard.x, rightGuard.y, 4, 0, Math.PI * 2); ctx.fill();
+        }
+        if (state.nosewheelLight) {
+          ctx.fillStyle = '#fff3b0'; ctx.shadowColor = '#fff3b0'; ctx.shadowBlur = 14;
+          ctx.beginPath(); ctx.arc(w * .5, h * .76, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+        }
         ctx.restore();
       }
 
@@ -917,39 +1026,40 @@
 
       function draw() {
         const w = view.width, h = view.height;
-        const horizon = clamp(h * .48 - Math.sin(rad(state.pitch)) * h * .25, h * .14, h * .82);
+        const horizon = clamp(h * .48 + Math.sin(rad(state.pitch)) * h * .25, h * .14, h * .82);
         ctx.clearRect(0, 0, w, h);
+        ctx.save();
+        ctx.translate(w / 2, h / 2);
+        ctx.rotate(-rad(state.roll));
+        ctx.translate(-w / 2, -h / 2);
         const sky = ctx.createLinearGradient(0, 0, 0, horizon);
         sky.addColorStop(0, '#18515c'); sky.addColorStop(1, '#65b8b5');
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, w, horizon);
+        ctx.fillStyle = sky; ctx.fillRect(-w, -h, w * 3, horizon + h);
         const ground = ctx.createLinearGradient(0, horizon, 0, h);
         ground.addColorStop(0, '#6e8069'); ground.addColorStop(1, '#182d2d');
-        ctx.fillStyle = ground; ctx.fillRect(0, horizon, w, h - horizon);
+        ctx.fillStyle = ground; ctx.fillRect(-w, horizon, w * 3, h * 2);
 
-        ctx.save();
-        ctx.translate(w / 2, horizon);
-        ctx.rotate(-rad(state.roll) * .38);
-        ctx.translate(-w / 2, -horizon);
         ctx.strokeStyle = 'rgba(235, 251, 245, .52)'; ctx.lineWidth = 1;
         for (let angle = -20; angle <= 20; angle += 10) {
           const y = horizon - angle * 3.3;
           ctx.beginPath(); ctx.moveTo(w / 2 - (angle ? 28 : 48), y); ctx.lineTo(w / 2 + (angle ? 28 : 48), y); ctx.stroke();
           if (angle !== 0) { ctx.fillStyle = 'rgba(235, 251, 245, .68)'; ctx.font = '10px system-ui'; ctx.fillText(`${Math.abs(angle)}°`, w / 2 + 56, y + 3); }
         }
-        ctx.restore();
-
         drawWorldTerrain(w, h, horizon);
         drawWorldTrees(w, h, horizon);
         drawWorldRunway(w, h, horizon);
         drawWorldBeacon(w, horizon);
         drawTrainingRing(w, horizon);
+        ctx.restore();
 
         if (state.viewMode === 'fpv') {
           drawFpvDrone(w, h);
-          drawFpvHud(w, h);
         } else {
           drawAircraft(w, h);
         }
+        ctx.restore();
+
+        if (state.viewMode === 'fpv') drawFpvHud(w, h);
 
         ctx.fillStyle = 'rgba(5, 18, 21, .58)'; ctx.fillRect(12, h - 30, w - 24, 18);
         ctx.fillStyle = '#e8f6ef'; ctx.font = '11px system-ui'; ctx.fillText(`WIND 08 kt · RUNWAY 18/36 · N/S · FUEL ${Math.round(state.fuel)}%`, 22, h - 18);
@@ -973,6 +1083,10 @@
       root.querySelector('#fs-view-toggle').addEventListener('click', toggleView);
       root.querySelector('#fs-controls-open').addEventListener('click', toggleControlsMenu);
       root.querySelector('#fs-controls-close').addEventListener('click', toggleControlsMenu);
+      root.querySelector('#fs-flaps-10').addEventListener('click', () => toggleFlaps(10));
+      root.querySelector('#fs-flaps-30').addEventListener('click', () => toggleFlaps(30));
+      root.querySelector('#fs-nav-lights').addEventListener('click', toggleNavLights);
+      root.querySelector('#fs-nose-light').addEventListener('click', toggleNosewheelLight);
       for (const axis of Object.keys(controlInversions)) el(`#fs-invert-${axis}`).addEventListener('change', event => setControlInversion(axis, event.target.value));
       window.addEventListener('resize', resize);
       window.addEventListener('gamepadconnected', updateGamepadLabel);
@@ -989,6 +1103,10 @@
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
         if (event.code === 'KeyP' && !event.repeat) togglePause();
         if (event.code === 'KeyV' && !event.repeat) toggleView();
+        if (event.code === 'Digit1' && !event.repeat) toggleFlaps(10);
+        if (event.code === 'Digit2' && !event.repeat) toggleFlaps(30);
+        if (event.code === 'KeyN' && !event.repeat) toggleNavLights();
+        if (event.code === 'KeyL' && !event.repeat) toggleNosewheelLight();
         if (event.code === 'Escape') el('#fs-controls-menu').hidden = true;
         if (event.code === 'Enter') startFlight();
       });

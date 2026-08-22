@@ -7,6 +7,17 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.009",
+    date: "August 22, 2026",
+    title: "Attitude instruments, flaps, and aircraft lights",
+    details: [
+      "Inverted pitch by default for the current control setup.",
+      "Added full-roll aircraft and world perspective with HSI, VSI, altitude, airspeed, and flaps indicators.",
+      "Added 10° / 30° flap toggles and approach lift / drag effects.",
+      "Added FAA-style red-left, green-right, white-tail navigation lights and a nosewheel light toggle.",
+    ],
+  },
+  {
     version: "v0.1.008",
     date: "August 22, 2026",
     title: "Control direction and focus recovery",

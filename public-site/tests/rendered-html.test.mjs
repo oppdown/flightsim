@@ -26,7 +26,7 @@ test("server-renders the public Flight Lab site", async () => {
   assert.match(html, /Learn the runway by flying it\./);
   assert.match(html, /href="\/download"/);
   assert.match(html, /href="\/changelog"/);
-  assert.match(html, /v0\.1\.008/);
+  assert.match(html, /v0\.1\.009/);
   assert.doesNotMatch(html, /src="\/flight-simulator\.html"/);
   assert.doesNotMatch(html, /Every build is tested before it ships\.|View source on GitHub|GitHub|github\.com/i);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview|SkeletonPreview/);
@@ -50,14 +50,14 @@ test("the public site keeps the simulator asset and source history", async () =>
     readFile(new URL("../../CHANGELOG.md", import.meta.url), "utf8"),
   ]);
 
-  await access(new URL("../public/downloads/flight-lab-pwa-v0.1.008.zip", import.meta.url));
+  await access(new URL("../public/downloads/flight-lab-pwa-v0.1.009.zip", import.meta.url));
   await assert.rejects(access(new URL("../public/flight-simulator.html", import.meta.url)));
   assert.doesNotMatch(page, /flight-simulator\.html|<iframe/);
   assert.match(changelogPage, /Flight Lab version history/);
-  assert.match(downloadPage, /flight-lab-pwa-v0\.1\.008\.zip/);
+  assert.match(downloadPage, /flight-lab-pwa-v0\.1\.009\.zip/);
   assert.doesNotMatch(`${page}\n${changelogPage}\n${downloadPage}`, /github/i);
   assert.match(layout, /Flight Lab · Takeoff & Landing Trainer/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton|WRANGLER_LOG_PATH/);
-  assert.match(changelog, /## v0\.1\.008/);
+  assert.match(changelog, /## v0\.1\.009/);
   assert.doesNotMatch(changelog, /## 0\.2\.0|## 0\.1\.0/);
 });

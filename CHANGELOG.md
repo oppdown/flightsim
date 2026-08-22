@@ -1,5 +1,12 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.009 — 2026-08-22
+
+- Inverted pitch by default for the current control setup.
+- Added full-roll aircraft/world perspective and a live HSI, VSI, altitude, airspeed, and flaps instrument area.
+- Added 10° / 30° flap toggles with lift/drag effects and key bindings `1` / `2`.
+- Added navigation and nosewheel light toggles with key bindings `N` / `L`; navigation lights use red left, green right, and white tail placement.
+
 ## v0.1.008 — 2026-08-22
 
 - Added Normal / Inverted selectors for pitch, roll, and yaw.

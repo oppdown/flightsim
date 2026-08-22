@@ -84,12 +84,43 @@ test('open-world FPV view has a switchable drone camera and procedural landmarks
 });
 
 test('axis direction selectors invert pitch, roll, and yaw across control devices', () => {
-  assert.match(simulator, /const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions'/);
+  assert.match(simulator, /const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions-v2'/);
+  assert.match(simulator, /const controlInversions = { pitch: true, roll: false, yaw: false }/);
   assert.match(simulator, /function axisSign\(axis\)/);
   assert.match(simulator, /axisSign\('pitch'\) \* \(keyboard\.pitch \* \.55 \+ mouse\.pitch \* \.8 \+ pad\.pitch\)/);
   assert.match(simulator, /axisSign\('roll'\) \* \(keyboard\.roll \* \.7 \+ mouse\.roll \* \.8 \+ pad\.roll\)/);
   assert.match(simulator, /axisSign\('yaw'\) \* \(keyboard\.yaw \* \.7 \+ pad\.yaw\)/);
   assert.match(simulator, /window\.localStorage\.setItem\(CONTROL_INVERSION_STORAGE_KEY/);
+});
+
+test('aircraft perspective and HSI follow full pitch and roll attitude', () => {
+  assert.match(simulator, /id="fs-hsi-heading"/);
+  assert.match(simulator, /id="fs-hsi-aircraft"/);
+  assert.match(simulator, /id="fs-vsi"/);
+  assert.match(simulator, /id="fs-altitude-indicator"/);
+  assert.match(simulator, /el\('#fs-hsi-card'\)\.style\.transform = `rotate\(\$\{-state\.heading\}deg\)`/);
+  assert.match(simulator, /el\('#fs-hsi-aircraft'\)\.style\.transform = `translate\(-50%, -50%\) rotate\(\$\{state\.roll\}deg\)`/);
+  assert.match(simulator, /ctx\.rotate\(-rad\(state\.roll\)\)/);
+  assert.doesNotMatch(simulator, /state\.roll\) \* \.38/);
+  assert.doesNotMatch(simulator, /state\.roll\) \* \.62/);
+});
+
+test('flaps and aircraft lights have toggles, key bindings, and flight effects', () => {
+  assert.match(simulator, /flaps: 0, navLights: false, nosewheelLight: false/);
+  assert.match(simulator, /id="fs-flaps-10"/);
+  assert.match(simulator, /id="fs-flaps-30"/);
+  assert.match(simulator, /id="fs-nav-lights"/);
+  assert.match(simulator, /id="fs-nose-light"/);
+  assert.match(simulator, /event\.code === 'Digit1'/);
+  assert.match(simulator, /event\.code === 'Digit2'/);
+  assert.match(simulator, /event\.code === 'KeyN'/);
+  assert.match(simulator, /event\.code === 'KeyL'/);
+  assert.match(simulator, /const flapDrag = state\.flaps === 30 \? 7 : state\.flaps === 10 \? 2\.5 : 0/);
+  assert.match(simulator, /const flapLift = state\.flaps === 30 \? \.16 : state\.flaps === 10 \? \.08 : 0/);
+  assert.match(simulator, /state\.pitch > 1 \? \.54 \+ flapLift : 0/);
+  assert.match(simulator, /ctx\.fillStyle = '#e95c61'/);
+  assert.match(simulator, /ctx\.fillStyle = '#5be08b'/);
+  assert.match(simulator, /ctx\.fillStyle = '#f7fff8'/);
 });
 
 test('transient inputs clear when the browser loses focus', () => {
@@ -124,7 +155,7 @@ test('flight starts at idle and requires throttle plus nose-up input for liftoff
   assert.match(simulator, /altitude: 0.*throttle: 0/);
   assert.match(simulator, /id="fs-throttle" class="fs-readout-value">0<\/span>%/);
   assert.match(simulator, /const acceleration = state\.throttle \* 27 - drag/);
-  assert.match(simulator, /const lift = Math\.max\(0, state\.speed - 54\) \* \(state\.pitch > 1 \? \.54 : 0\)/);
+  assert.match(simulator, /const lift = Math\.max\(0, state\.speed - 54\) \* \(state\.pitch > 1 \? \.54 \+ flapLift : 0\)/);
 });
 
 test('turning changes both heading and aircraft world position', () => {
