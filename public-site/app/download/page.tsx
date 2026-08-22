@@ -13,7 +13,7 @@ export default function DownloadPage() {
       </header>
 
       <section className="page-hero" aria-labelledby="download-title">
-        <p className="eyebrow">STANDALONE TEST BUILD · v0.1.011</p>
+        <p className="eyebrow">STANDALONE TEST BUILD · v0.1.012</p>
         <h1 id="download-title">Download Flight Lab.</h1>
         <p className="page-lede">The simulator is now distributed as a small offline-ready PWA package so testers can run it separately from the public site.</p>
       </section>
@@ -21,10 +21,10 @@ export default function DownloadPage() {
       <section className="download-card" aria-labelledby="package-title">
         <div>
           <p className="eyebrow">PWA PACKAGE</p>
-          <h2 id="package-title">Flight Lab v0.1.011</h2>
+          <h2 id="package-title">Flight Lab v0.1.012</h2>
           <p>Includes the simulator, install manifest, offline cache, and app icon. The public site no longer embeds the playable simulator.</p>
         </div>
-          <a className="primary-action download-action" href="/downloads/flight-lab-pwa-v0.1.011.zip" download>
+          <a className="primary-action download-action" href="/downloads/flight-lab-pwa-v0.1.012.zip" download>
           Download PWA package <span aria-hidden="true">↓</span>
         </a>
       </section>

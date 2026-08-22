@@ -7,6 +7,16 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.012",
+    date: "August 22, 2026",
+    title: "Grounded preflight view",
+    details: [
+      "Fixed the pre-start chase view so the aircraft is level, stationary, and visually grounded on the runway.",
+      "Held 0 mph, 0 ft, 0° pitch, and 0° roll until the preflight countdown begins.",
+      "Added a low ground anchor and landing shadow to connect the chase aircraft to the terrain.",
+    ],
+  },
+  {
     version: "v0.1.011",
     date: "August 22, 2026",
     title: "Ground contact and liftoff physics",

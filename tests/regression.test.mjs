@@ -153,6 +153,7 @@ test('throttle feedback sits below the primary flight readouts', () => {
 
 test('flight starts at idle and requires throttle plus nose-up input for liftoff', () => {
   assert.match(simulator, /altitude: 0.*throttle: 0/);
+  assert.match(simulator, /heading: 0, pitch: 0, roll: 0, verticalSpeed: 0/);
   assert.match(simulator, /airborne: false/);
   assert.match(simulator, /id="fs-throttle" class="fs-readout-value">0<\/span>%/);
   assert.match(simulator, /const acceleration = state\.throttle \* 27 - drag/);
@@ -160,6 +161,16 @@ test('flight starts at idle and requires throttle plus nose-up input for liftoff
   assert.match(simulator, /const liftoff = !state\.airborne && state\.altitude === 0 && state\.speed >= 60 && state\.pitch > 1/);
   assert.match(simulator, /const airborne = state\.airborne/);
   assert.doesNotMatch(simulator, /const airborne = state\.altitude > 0 \|\| state\.speed > 60/);
+});
+
+test('preflight render is level and places the chase aircraft on the ground', () => {
+  assert.match(simulator, /function stabilizePreflightState\(\)/);
+  assert.match(simulator, /if \(state\.running\) return;/);
+  assert.match(simulator, /state\.pitch = 0;/);
+  assert.match(simulator, /state\.roll = 0;/);
+  assert.match(simulator, /const groundAnchorY = clamp\(h \* \.84 - altitudeLift/);
+  assert.match(simulator, /ctx\.beginPath\(\); ctx\.ellipse\(0, 66, 82, 10/);
+  assert.match(simulator, /stabilizePreflightState\(\);\s*updateGamepadLabel\(\);/);
 });
 
 test('instrument status distinguishes ground roll from airborne flight', () => {

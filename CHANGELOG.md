@@ -1,5 +1,11 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.012 — 2026-08-22
+
+- Fixed the pre-start chase view so the aircraft is level, stationary, and visually grounded on the runway.
+- Added a preflight state stabilizer that holds 0 mph, 0 ft, 0° pitch, and 0° roll until the countdown starts the flight.
+- Added a low ground anchor and landing shadow to keep the chase aircraft visually connected to the terrain.
+
 ## v0.1.011 — 2026-08-22
 
 - Added an explicit ground-roll / airborne flight state so 0 ft readings match the aircraft's physical contact with the runway or terrain.
