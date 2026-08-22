@@ -158,6 +158,19 @@ test('flight starts at idle and requires throttle plus nose-up input for liftoff
   assert.match(simulator, /const lift = Math\.max\(0, state\.speed - 54\) \* \(state\.pitch > 1 \? \.54 \+ flapLift : 0\)/);
 });
 
+test('start flight uses a five-second centered preflight countdown', () => {
+  assert.match(simulator, /id="fs-preflight" class="fs-preflight" hidden/);
+  assert.match(simulator, /id="fs-preflight-count" class="fs-preflight-count">5/);
+  assert.match(simulator, /Place your cursor in the middle of the world view/);
+  assert.match(simulator, /const PREFLIGHT_COUNTDOWN_SECONDS = 5/);
+  assert.match(simulator, /countdown: 0/);
+  assert.match(simulator, /state\.countdown = PREFLIGHT_COUNTDOWN_SECONDS/);
+  assert.match(simulator, /function advancePreflight\(dt\)/);
+  assert.match(simulator, /state\.running = true/);
+  assert.match(simulator, /if \(state\.countdown > 0\) advancePreflight\(FIXED_DT\)/);
+  assert.match(simulator, /pointer\.active = false/);
+});
+
 test('turning changes both heading and aircraft world position', () => {
   assert.match(simulator, /const coordinatedTurnRate/);
   assert.match(simulator, /state\.heading\s*=.*coordinatedTurnRate/);

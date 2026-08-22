@@ -1,4 +1,4 @@
-Flight Lab Simulator v0.1.009
+Flight Lab Simulator v0.1.010
 
 This folder is a standalone PWA package for local testing.
 

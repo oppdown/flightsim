@@ -1,5 +1,11 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.010 — 2026-08-22
+
+- Added a five-second preflight countdown after Start flight.
+- Added a centered world-view prompt asking the player to place the cursor before controls become active.
+- Kept the aircraft stationary until the countdown completes.
+
 ## v0.1.009 — 2026-08-22
 
 - Inverted pitch by default for the current control setup.

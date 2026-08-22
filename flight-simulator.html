@@ -135,6 +135,10 @@
     #flight-simulator .fs-reticle::before { width: 32px; height: 1px; left: -8px; top: 8px; }
     #flight-simulator .fs-reticle::after { height: 32px; width: 1px; left: 8px; top: -8px; }
     #flight-simulator .fs-canvas-label { position: absolute; left: 12px; top: 10px; color: rgba(255,255,255,.74); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
+    #flight-simulator .fs-preflight[hidden] { display: none; }
+    #flight-simulator .fs-preflight { position: absolute; z-index: 3; left: 50%; top: 50%; display: grid; justify-items: center; gap: 7px; width: min(290px, calc(100% - 32px)); padding: 14px 16px; border: 1px solid rgba(87, 212, 189, .58); border-radius: 10px; color: var(--fs-ink); background: rgba(8, 24, 28, .84); box-shadow: 0 12px 34px rgba(0, 0, 0, .28); text-align: center; pointer-events: none; transform: translate(-50%, -50%); }
+    #flight-simulator .fs-preflight-count { color: var(--fs-amber); font-size: 42px; font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1; }
+    #flight-simulator .fs-preflight-copy { color: var(--fs-ink); font-size: 12px; }
     #flight-simulator .fs-readouts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--fs-line); }
     #flight-simulator .fs-readout { justify-content: space-between; gap: 5px; min-width: 0; padding: 9px 10px; background: rgba(9, 20, 24, .96); }
     #flight-simulator .fs-readout-label { color: var(--fs-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
@@ -245,6 +249,10 @@
         <div class="fs-canvas-wrap">
           <canvas id="fs-canvas" role="img" aria-label="Animated flight view with horizon, world terrain, trees, cardinal runway markings, aircraft reticle, and training ring"></canvas>
           <div id="fs-canvas-label" class="fs-canvas-label">FPV VIEW · OPEN WORLD SECTOR 01</div>
+          <div id="fs-preflight" class="fs-preflight" hidden aria-live="assertive">
+            <strong id="fs-preflight-count" class="fs-preflight-count">5</strong>
+            <span class="fs-preflight-copy">Place your cursor in the middle of the world view</span>
+          </div>
           <div class="fs-reticle" aria-hidden="true"></div>
         </div>
         <div class="fs-readouts" aria-live="polite">
@@ -333,7 +341,7 @@
       const keys = new Set();
       const pointer = { active: false, x: 0, y: 0 };
       const view = { width: 0, height: 0, dpr: 1 };
-      const initialState = () => ({ running: false, paused: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
+      const initialState = () => ({ running: false, paused: false, countdown: 0, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
@@ -363,6 +371,7 @@
       let gamepadActionLatch = { start: false, pause: false, reset: false };
       const CONTROL_INVERSION_STORAGE_KEY = 'flight-lab-control-inversions-v2';
       const controlInversions = { pitch: true, roll: false, yaw: false };
+      const PREFLIGHT_COUNTDOWN_SECONDS = 5;
       const JOYSTICK_PROFILES = Object.freeze({
         xinput: Object.freeze({
           name: 'Xbox-style gamepad',
@@ -574,11 +583,27 @@
       }
 
       function startFlight() {
-        if (!state.running) state.running = true;
+        if (state.running || state.countdown > 0) return;
         state.paused = false;
-        state.message = 'Accelerate down the runway';
-        el('#fs-mode').textContent = 'LIVE';
-        el('#fs-message').textContent = state.message;
+        state.countdown = PREFLIGHT_COUNTDOWN_SECONDS;
+        state.message = 'Place your cursor in the middle of the world view';
+        pointer.active = false;
+        el('#fs-mode').textContent = 'PREFLIGHT';
+        el('#fs-start').disabled = true;
+        updateUi();
+      }
+
+      function advancePreflight(dt) {
+        if (state.countdown <= 0) return;
+        state.countdown = Math.max(0, state.countdown - dt);
+        if (state.countdown === 0) {
+          state.running = true;
+          state.message = 'Accelerate down the runway';
+          el('#fs-mode').textContent = 'LIVE';
+          el('#fs-start').disabled = false;
+        } else {
+          state.message = 'Place your cursor in the middle of the world view';
+        }
       }
 
       function togglePause() {
@@ -670,6 +695,10 @@
         el('#fs-attitude').textContent = `${Math.round(state.pitch)} / ${Math.round(state.roll)}`;
         el('#fs-throttle').textContent = Math.round(state.throttle * 100);
         el('#fs-throttle-meter').style.width = `${state.throttle * 100}%`;
+        const countdownActive = state.countdown > 0;
+        el('#fs-preflight').hidden = !countdownActive;
+        el('#fs-preflight-count').textContent = String(Math.max(1, Math.ceil(state.countdown)));
+        el('#fs-start').disabled = countdownActive;
         el('#fs-hsi-heading').textContent = `${String(Math.round(state.heading)).padStart(3, '0')}°`;
         el('#fs-hsi-card').style.transform = `rotate(${-state.heading}deg)`;
         el('#fs-hsi-aircraft').style.transform = `translate(-50%, -50%) rotate(${state.roll}deg)`;
@@ -699,7 +728,8 @@
           4: 'Flare and touch down gently',
           5: 'Training complete'
         };
-        if (state.objective !== 5 && !state.message.includes('Hard contact')) state.message = phaseMessages[state.objective];
+        if (countdownActive) state.message = 'Place your cursor in the middle of the world view';
+        else if (state.objective !== 5 && !state.message.includes('Hard contact')) state.message = phaseMessages[state.objective];
         el('#fs-message').textContent = state.message;
       }
 
@@ -1069,8 +1099,12 @@
         const elapsed = Math.min(.1, (now - lastFrame) / 1000); lastFrame = now; accumulator += elapsed;
         updateGamepadLabel();
         handleGamepadActions();
-        if (state.running && !state.paused) {
-          while (accumulator >= FIXED_DT) { physicsStep(FIXED_DT); accumulator -= FIXED_DT; }
+        if (state.countdown > 0 || (state.running && !state.paused)) {
+          while (accumulator >= FIXED_DT) {
+            if (state.countdown > 0) advancePreflight(FIXED_DT);
+            else if (state.running && !state.paused) physicsStep(FIXED_DT);
+            accumulator -= FIXED_DT;
+          }
           updateUi();
         }
         draw();

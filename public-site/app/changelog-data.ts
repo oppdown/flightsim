@@ -7,6 +7,16 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.010",
+    date: "August 22, 2026",
+    title: "Preflight countdown",
+    details: [
+      "Added a five-second countdown after Start flight.",
+      "Added a centered prompt asking the player to place the cursor in the world view.",
+      "Kept flight controls and aircraft motion inactive until the countdown completes.",
+    ],
+  },
+  {
     version: "v0.1.009",
     date: "August 22, 2026",
     title: "Attitude instruments, flaps, and aircraft lights",
