@@ -70,8 +70,14 @@ test('open-world FPV view has a switchable drone camera and procedural landmarks
   assert.match(simulator, /pitchInput \* 180/);
   assert.match(simulator, /rollInput \* 360/);
   assert.doesNotMatch(simulator, /fillText\('N\s+E\s+S\s+W'/);
-  assert.match(simulator, /const altitudeDepth = Math\.max\(0, state\.altitude\)/);
+  assert.match(simulator, /const CAMERA_EYE_HEIGHT_FEET = 5/);
+  assert.match(simulator, /const cameraAltitude = Math\.max\(0, state\.altitude\) \+ CAMERA_EYE_HEIGHT_FEET/);
+  assert.match(simulator, /const depth = forward \* Math\.cos\(pitch\) \+ groundBelowCamera \* Math\.sin\(pitch\)/);
+  assert.match(simulator, /const cameraVertical = groundBelowCamera \* Math\.cos\(pitch\) - forward \* Math\.sin\(pitch\)/);
+  assert.doesNotMatch(simulator, /const altitudeDepth = Math\.max\(0, state\.altitude\)/);
   assert.match(simulator, /const runwayBuffer = RUNWAY\.halfWidth \+ 170/);
+  assert.match(simulator, /const TREE_HEIGHT_FEET = 48/);
+  assert.match(simulator, /point\.perspective \* TREE_HEIGHT_FEET \* tree\.size/);
   assert.match(simulator, /id="fs-controls-open"/);
   assert.match(simulator, /id="fs-controls-menu"/);
   assert.match(simulator, /Logitech Extreme 3D Pro/);

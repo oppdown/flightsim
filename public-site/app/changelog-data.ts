@@ -7,6 +7,17 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.014",
+    date: "August 22, 2026",
+    title: "World-scale terrain projection",
+    details: [
+      "Replaced the placeholder altitude offset with a ground-plane camera model based on aircraft height above terrain.",
+      "Added a 5-ft parked-aircraft eye height so runway and terrain remain visible from the ground.",
+      "Reduced procedural tree height to 48 ft and tied perspective size to depth.",
+      "Made pitch-driven horizon movement use camera focal length instead of a fixed visual offset.",
+    ],
+  },
+  {
     version: "v0.1.013",
     date: "August 22, 2026",
     title: "Relative airspeed and world travel",

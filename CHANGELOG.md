@@ -1,5 +1,12 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.014 — 2026-08-22
+
+- Replaced the placeholder altitude projection with a real ground-plane camera model using aircraft height above terrain.
+- Added a 5-ft parked-aircraft eye height so runway and terrain remain visible from the ground.
+- Reduced procedural tree height to a 48-ft world value and kept perspective size tied to depth.
+- Made pitch-driven horizon movement use camera focal length instead of a fixed visual offset.
+
 ## v0.1.013 — 2026-08-22
 
 - Fixed world travel so displayed airspeed in mph produces matching movement through the fixed terrain and runway.

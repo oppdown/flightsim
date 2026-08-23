@@ -345,6 +345,8 @@
       const initialState = () => ({ running: false, paused: false, countdown: 0, airborne: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
       const MPH_TO_WORLD_UNITS_PER_SECOND = 1.46667;
+      const CAMERA_EYE_HEIGHT_FEET = 5;
+      const TREE_HEIGHT_FEET = 48;
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
       const TERRAIN_CELL_SIZE = 360;
@@ -758,15 +760,20 @@
         const heading = rad(state.heading);
         const side = dx * Math.cos(heading) - dz * Math.sin(heading);
         const forward = dx * Math.sin(heading) + dz * Math.cos(heading);
-        if (forward <= 8) return null;
+        const cameraAltitude = Math.max(0, state.altitude) + CAMERA_EYE_HEIGHT_FEET;
+        const groundBelowCamera = -cameraAltitude;
+        const pitch = rad(state.pitch);
         const focalLength = Math.max(180, w * .52);
-        const altitudeDepth = Math.max(0, state.altitude) * .38;
-        const perspective = focalLength / (forward + 180 + altitudeDepth);
+        const depth = forward * Math.cos(pitch) + groundBelowCamera * Math.sin(pitch);
+        if (depth <= 8) return null;
+        const cameraVertical = groundBelowCamera * Math.cos(pitch) - forward * Math.sin(pitch);
+        const perspective = focalLength / depth;
         return {
           x: w / 2 + side * perspective,
-          y: horizon + 260 * perspective - state.altitude * .045,
+          y: view.height / 2 - cameraVertical * perspective,
           forward,
-          perspective
+          perspective,
+          depth
         };
       }
 
@@ -859,7 +866,7 @@
       function drawWorldTree(tree, w, h, horizon) {
         const point = projectWorldPoint(tree.x, tree.z, w, horizon);
         if (!point || point.y < 8 || point.y > h + 26) return;
-        const size = clamp(point.perspective * 190 * tree.size, 3, 58);
+        const size = clamp(point.perspective * TREE_HEIGHT_FEET * tree.size, 3, 58);
         if (size < 4) return;
         const trunkWidth = Math.max(2, size * .12);
         ctx.fillStyle = 'rgba(62, 50, 34, .82)';
@@ -1077,7 +1084,8 @@
 
       function draw() {
         const w = view.width, h = view.height;
-        const horizon = clamp(h * .48 + Math.sin(rad(state.pitch)) * h * .25, h * .14, h * .82);
+        const focalLength = Math.max(180, w * .52);
+        const horizon = clamp(h * .5 + focalLength * Math.tan(rad(state.pitch)), h * .08, h * .92);
         ctx.clearRect(0, 0, w, h);
         ctx.save();
         ctx.translate(w / 2, h / 2);
