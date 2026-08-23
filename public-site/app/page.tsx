@@ -14,7 +14,7 @@ export default function Home() {
 
       <section id="top" className="hero-grid" aria-labelledby="page-title">
         <div className="hero-copy">
-          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.012</p>
+          <p className="eyebrow">PUBLIC FLIGHT TRAINING LAB · v0.1.013</p>
           <h1 id="page-title">Learn the runway by flying it.</h1>
           <p className="hero-lede">
             A focused, deterministic open world for low-altitude flight, FPV exploration,

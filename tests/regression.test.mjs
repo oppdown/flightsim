@@ -199,6 +199,12 @@ test('turning changes both heading and aircraft world position', () => {
   assert.match(simulator, /state\.worldZ\s*\+=/);
 });
 
+test('airspeed advances the aircraft through the fixed world at mph scale', () => {
+  assert.match(simulator, /const MPH_TO_WORLD_UNITS_PER_SECOND = 1\.46667/);
+  assert.match(simulator, /const travel = state\.speed \* dt \* MPH_TO_WORLD_UNITS_PER_SECOND/);
+  assert.doesNotMatch(simulator, /const travel = state\.speed \* dt \* \.15/);
+});
+
 test('control mappings keep throttle, brake, and pause separate', () => {
   assert.match(simulator, /const throttle = \(keys\.has\('KeyW'\)/);
   assert.match(simulator, /const brake = keys\.has\('Space'\)/);

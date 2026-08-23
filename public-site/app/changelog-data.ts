@@ -7,6 +7,16 @@ export type Change = {
 
 export const changes: Change[] = [
   {
+    version: "v0.1.013",
+    date: "August 22, 2026",
+    title: "Relative airspeed and world travel",
+    details: [
+      "Fixed world travel so displayed mph produces matching movement through the fixed terrain and runway.",
+      "Replaced the slow placeholder motion scale with the 1.46667 world-units-per-second conversion for each mph.",
+      "Added regression coverage against the old under-scaled travel calculation.",
+    ],
+  },
+  {
     version: "v0.1.012",
     date: "August 22, 2026",
     title: "Grounded preflight view",

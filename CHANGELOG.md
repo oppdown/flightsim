@@ -1,5 +1,11 @@
 # Flight Lab Simulator Changelog
 
+## v0.1.013 — 2026-08-22
+
+- Fixed world travel so displayed airspeed in mph produces matching movement through the fixed terrain and runway.
+- Replaced the slow placeholder motion scale with the 1.46667 world-units-per-second conversion for each mph.
+- Added a regression guard against the old under-scaled travel calculation.
+
 ## v0.1.012 — 2026-08-22
 
 - Fixed the pre-start chase view so the aircraft is level, stationary, and visually grounded on the runway.

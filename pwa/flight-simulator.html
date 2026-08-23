@@ -344,6 +344,7 @@
       const view = { width: 0, height: 0, dpr: 1 };
       const initialState = () => ({ running: false, paused: false, countdown: 0, airborne: false, t: 0, speed: 0, altitude: 0, heading: 0, pitch: 0, roll: 0, verticalSpeed: 0, throttle: 0, flaps: 0, navLights: false, nosewheelLight: false, fuel: 100, score: 0, distance: 0, worldX: 0, worldZ: 0, objective: 1, message: 'Press Start flight', ring: 0, viewMode: 'fpv' });
       const RUNWAY = Object.freeze({ x: 0, startZ: -220, endZ: 3600, halfWidth: 45 });
+      const MPH_TO_WORLD_UNITS_PER_SECOND = 1.46667;
       const BEACON = Object.freeze({ x: 0, z: 1050 });
       const TRAINING_RING = Object.freeze({ x: 140, z: 900 });
       const TERRAIN_CELL_SIZE = 360;
@@ -657,7 +658,7 @@
         const climbRate = airborne ? Math.sin(rad(state.pitch)) * state.speed * .55 + lift - stallSink - lowSpeedGravity : 0;
         state.verticalSpeed = climbRate;
         state.altitude += climbRate * dt;
-        const travel = state.speed * dt * .15;
+        const travel = state.speed * dt * MPH_TO_WORLD_UNITS_PER_SECOND;
         state.distance += travel;
         state.worldX += Math.sin(rad(state.heading)) * travel;
         state.worldZ += Math.cos(rad(state.heading)) * travel;
